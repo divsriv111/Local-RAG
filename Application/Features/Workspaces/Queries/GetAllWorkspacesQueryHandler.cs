@@ -21,14 +21,28 @@ public class GetAllWorkspacesQueryHandler : IRequestHandler<GetAllWorkspacesQuer
         var filteredWorkspaces = workspaces
             .Where(w => w.UserId == request.UserId);
 
+        // Search functionality - case-insensitive search by workspace name
         if (!string.IsNullOrWhiteSpace(request.SearchTerm))
         {
             filteredWorkspaces = filteredWorkspaces
                 .Where(w => w.Name.Contains(request.SearchTerm, StringComparison.OrdinalIgnoreCase));
         }
 
-        return filteredWorkspaces
-            .OrderByDescending(w => w.CreatedAt)
+        // Sorting
+        var sortedWorkspaces = request.SortBy.ToLower() switch
+        {
+            "name" => request.SortOrder.ToLower() == "asc"
+                ? filteredWorkspaces.OrderBy(w => w.Name)
+                : filteredWorkspaces.OrderByDescending(w => w.Name),
+            "updatedat" => request.SortOrder.ToLower() == "asc"
+                ? filteredWorkspaces.OrderBy(w => w.UpdatedAt)
+                : filteredWorkspaces.OrderByDescending(w => w.UpdatedAt),
+            _ => request.SortOrder.ToLower() == "asc"
+                ? filteredWorkspaces.OrderBy(w => w.CreatedAt)
+                : filteredWorkspaces.OrderByDescending(w => w.CreatedAt)
+        };
+
+        return sortedWorkspaces
             .Select(w => new WorkspaceDto
             {
                 Id = w.Id,
