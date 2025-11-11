@@ -1,0 +1,64 @@
+### PDF Upload API Test File
+### Use this file to test the PDF upload endpoint
+
+@baseUrl = http://localhost:5000
+@workspaceId = YOUR_WORKSPACE_ID_HERE
+@token = YOUR_JWT_TOKEN_HERE
+
+### 1. Upload Single PDF
+POST {{baseUrl}}/api/workspaces/{{workspaceId}}/pdfs/upload
+Authorization: Bearer {{token}}
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="files"; filename="sample.pdf"
+Content-Type: application/pdf
+
+< ./path/to/your/sample.pdf
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+### 2. Upload Multiple PDFs
+POST {{baseUrl}}/api/workspaces/{{workspaceId}}/pdfs/upload
+Authorization: Bearer {{token}}
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="files"; filename="document1.pdf"
+Content-Type: application/pdf
+
+< ./path/to/your/document1.pdf
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="files"; filename="document2.pdf"
+Content-Type: application/pdf
+
+< ./path/to/your/document2.pdf
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+### 3. Test with Invalid File Type (Should Fail)
+POST {{baseUrl}}/api/workspaces/{{workspaceId}}/pdfs/upload
+Authorization: Bearer {{token}}
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="files"; filename="document.txt"
+Content-Type: text/plain
+
+< ./path/to/your/document.txt
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+### 4. Test Upload Progress Endpoint (Placeholder)
+GET {{baseUrl}}/api/workspaces/{{workspaceId}}/pdfs/upload/progress/{{$guid}}
+Authorization: Bearer {{token}}
+
+### 5. Test Without Authentication (Should Return 401)
+POST {{baseUrl}}/api/workspaces/{{workspaceId}}/pdfs/upload
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="files"; filename="sample.pdf"
+Content-Type: application/pdf
+
+< ./path/to/your/sample.pdf
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+###
