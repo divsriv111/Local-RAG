@@ -5,6 +5,7 @@
 ### Prerequisites
 
 1. **Start PostgreSQL Database**:
+
 ```bash
 docker run --name rag-postgres \
   -e POSTGRES_DB=rag_chatbot \
@@ -15,6 +16,7 @@ docker run --name rag-postgres \
 ```
 
 2. **Apply Database Migrations**:
+
 ```bash
 export PATH="$PATH:/Users/divyanshusrivastava/.dotnet/tools"
 cd "/Users/divyanshusrivastava/Local RAG"
@@ -22,6 +24,7 @@ dotnet ef database update --project Infrastructure --startup-project API
 ```
 
 3. **Run the API**:
+
 ```bash
 cd "/Users/divyanshusrivastava/Local RAG"
 dotnet run --project API
@@ -37,6 +40,7 @@ dotnet run --project API
 ### 1. Create a Workspace
 
 **Request**:
+
 ```http
 POST http://localhost:5000/api/workspaces
 Content-Type: application/json
@@ -47,6 +51,7 @@ Content-Type: application/json
 ```
 
 **cURL**:
+
 ```bash
 curl -X POST "http://localhost:5000/api/workspaces" \
   -H "Content-Type: application/json" \
@@ -54,6 +59,7 @@ curl -X POST "http://localhost:5000/api/workspaces" \
 ```
 
 **Expected Response** (201 Created):
+
 ```json
 {
   "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
@@ -69,16 +75,19 @@ curl -X POST "http://localhost:5000/api/workspaces" \
 ### 2. Get All Workspaces
 
 **Request**:
+
 ```http
 GET http://localhost:5000/api/workspaces
 ```
 
 **cURL**:
+
 ```bash
 curl -X GET "http://localhost:5000/api/workspaces"
 ```
 
 **Expected Response** (200 OK):
+
 ```json
 [
   {
@@ -96,16 +105,19 @@ curl -X GET "http://localhost:5000/api/workspaces"
 ### 3. Get All Workspaces with Search
 
 **Request**:
+
 ```http
 GET http://localhost:5000/api/workspaces?search=First
 ```
 
 **cURL**:
+
 ```bash
 curl -X GET "http://localhost:5000/api/workspaces?search=First"
 ```
 
 **Expected Response** (200 OK):
+
 - Returns only workspaces matching "First" in name (case-insensitive)
 
 ---
@@ -113,16 +125,19 @@ curl -X GET "http://localhost:5000/api/workspaces?search=First"
 ### 4. Get Workspace by ID
 
 **Request**:
+
 ```http
 GET http://localhost:5000/api/workspaces/{id}
 ```
 
 **cURL** (replace `{id}` with actual ID from create response):
+
 ```bash
 curl -X GET "http://localhost:5000/api/workspaces/3fa85f64-5717-4562-b3fc-2c963f66afa6"
 ```
 
 **Expected Response** (200 OK):
+
 ```json
 {
   "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
@@ -140,6 +155,7 @@ curl -X GET "http://localhost:5000/api/workspaces/3fa85f64-5717-4562-b3fc-2c963f
 ### 5. Update Workspace (Stub - Not Fully Implemented)
 
 **Request**:
+
 ```http
 PUT http://localhost:5000/api/workspaces/{id}
 Content-Type: application/json
@@ -150,6 +166,7 @@ Content-Type: application/json
 ```
 
 **Expected Response** (204 No Content):
+
 - Currently returns NoContent without updating
 
 ---
@@ -157,11 +174,13 @@ Content-Type: application/json
 ### 6. Delete Workspace (Stub - Not Fully Implemented)
 
 **Request**:
+
 ```http
 DELETE http://localhost:5000/api/workspaces/{id}
 ```
 
 **Expected Response** (204 No Content):
+
 - Currently returns NoContent without deleting
 
 ---
@@ -184,10 +203,12 @@ DELETE http://localhost:5000/api/workspaces/{id}
 Create a new Postman collection with these requests:
 
 **1. Create Workspace**
+
 - Method: POST
 - URL: `http://localhost:5000/api/workspaces`
 - Headers: `Content-Type: application/json`
 - Body (raw JSON):
+
 ```json
 {
   "name": "{{$randomProductName}}"
@@ -195,15 +216,18 @@ Create a new Postman collection with these requests:
 ```
 
 **2. Get All Workspaces**
+
 - Method: GET
 - URL: `http://localhost:5000/api/workspaces`
 
 **3. Get Workspace by ID**
+
 - Method: GET
 - URL: `http://localhost:5000/api/workspaces/{{workspaceId}}`
 - (Save ID from create response to environment variable)
 
 **4. Search Workspaces**
+
 - Method: GET
 - URL: `http://localhost:5000/api/workspaces?search=test`
 
@@ -216,13 +240,16 @@ Create a new Postman collection with these requests:
 **Error**: "Could not connect to database"
 
 **Solution**:
+
 1. Verify PostgreSQL is running:
+
 ```bash
 docker ps | grep rag-postgres
 ```
 
 2. Check connection string in `API/appsettings.json`
 3. Test connection:
+
 ```bash
 docker exec -it rag-postgres psql -U raguser -d rag_chatbot
 ```
@@ -232,6 +259,7 @@ docker exec -it rag-postgres psql -U raguser -d rag_chatbot
 **Error**: "No such table"
 
 **Solution**:
+
 ```bash
 dotnet ef database update --project Infrastructure --startup-project API
 ```
@@ -241,7 +269,9 @@ dotnet ef database update --project Infrastructure --startup-project API
 **Error**: "Address already in use"
 
 **Solution**:
+
 1. Kill process on port 5000:
+
 ```bash
 lsof -ti:5000 | xargs kill -9
 ```
@@ -255,6 +285,7 @@ lsof -ti:5000 | xargs kill -9
 ### Test Invalid Input
 
 **Request**:
+
 ```http
 POST http://localhost:5000/api/workspaces
 Content-Type: application/json
@@ -265,9 +296,11 @@ Content-Type: application/json
 ```
 
 **Expected Response** (400 Bad Request):
+
 - Validation error for empty workspace name
 
 **Request**:
+
 ```http
 POST http://localhost:5000/api/workspaces
 Content-Type: application/json
@@ -278,6 +311,7 @@ Content-Type: application/json
 ```
 
 **Expected Response** (400 Bad Request):
+
 - Validation error for name exceeding 100 characters
 
 ---
@@ -287,26 +321,31 @@ Content-Type: application/json
 ### Check Data Directly in PostgreSQL
 
 **Connect to database**:
+
 ```bash
 docker exec -it rag-postgres psql -U raguser -d rag_chatbot
 ```
 
 **View workspaces**:
+
 ```sql
 SELECT * FROM "Workspaces";
 ```
 
 **View all tables**:
+
 ```sql
 \dt
 ```
 
 **Check table structure**:
+
 ```sql
 \d "Workspaces"
 ```
 
 **Exit**:
+
 ```sql
 \q
 ```
@@ -318,48 +357,53 @@ SELECT * FROM "Workspaces";
 ### Using Apache Bench
 
 **Create workspace** (100 requests, 10 concurrent):
+
 ```bash
 ab -n 100 -c 10 -p workspace.json -T application/json \
   http://localhost:5000/api/workspaces
 ```
 
 Where `workspace.json` contains:
+
 ```json
-{"name":"Load Test Workspace"}
+{ "name": "Load Test Workspace" }
 ```
 
 ### Using k6
 
 **Install k6**:
+
 ```bash
 brew install k6
 ```
 
 **Create test script** (`load-test.js`):
+
 ```javascript
-import http from 'k6/http';
-import { check } from 'k6';
+import http from "k6/http";
+import { check } from "k6";
 
 export default function () {
   const payload = JSON.stringify({
-    name: 'Test Workspace ' + Date.now(),
+    name: "Test Workspace " + Date.now(),
   });
 
   const params = {
     headers: {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
     },
   };
 
-  let res = http.post('http://localhost:5000/api/workspaces', payload, params);
-  
+  let res = http.post("http://localhost:5000/api/workspaces", payload, params);
+
   check(res, {
-    'status is 201': (r) => r.status === 201,
+    "status is 201": (r) => r.status === 201,
   });
 }
 ```
 
 **Run test**:
+
 ```bash
 k6 run load-test.js
 ```
@@ -386,6 +430,7 @@ k6 run load-test.js
 ## 🎯 Next Testing Phase
 
 Once authentication is implemented:
+
 - [ ] Test user registration
 - [ ] Test user login
 - [ ] Test JWT token validation

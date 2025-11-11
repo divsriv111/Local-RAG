@@ -17,7 +17,7 @@ public class GetAllWorkspacesQueryHandler : IRequestHandler<GetAllWorkspacesQuer
     public async Task<IEnumerable<WorkspaceDto>> Handle(GetAllWorkspacesQuery request, CancellationToken cancellationToken)
     {
         var workspaces = await _workspaceRepository.GetAllAsync(cancellationToken);
-        
+
         var filteredWorkspaces = workspaces
             .Where(w => w.UserId == request.UserId);
 

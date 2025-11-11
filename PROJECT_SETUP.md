@@ -3,11 +3,13 @@
 ## ✅ Completed Tasks
 
 ### 1. Solution Structure Created
+
 - ✅ Clean Architecture with 4 layers
 - ✅ Domain, Application, Infrastructure, and API projects
 - ✅ Proper project references established
 
 ### 2. Domain Layer
+
 - ✅ User entity (Id, Username, PasswordHash, Email, CreatedAt, UpdatedAt)
 - ✅ Workspace entity (Id, Name, UserId, CreatedAt, UpdatedAt)
 - ✅ ChatHistory entity (Id, WorkspaceId, Name, FirstQuery, CreatedAt, IsArchived)
@@ -17,6 +19,7 @@
 - ✅ IUnitOfWork interface for transactions
 
 ### 3. Application Layer
+
 - ✅ DTOs for all entities (User, Workspace, ChatHistory, PDFDocument, Message)
 - ✅ MediatR configured for CQRS
 - ✅ CreateWorkspaceCommand and handler
@@ -27,6 +30,7 @@
 - ✅ Dependency injection configuration
 
 ### 4. Infrastructure Layer
+
 - ✅ ApplicationDbContext with all DbSets
 - ✅ Entity configurations with indexes and relationships
 - ✅ Generic Repository<T> implementation
@@ -36,6 +40,7 @@
 - ✅ Dependency injection configuration
 
 ### 5. API Layer
+
 - ✅ WorkspacesController with CRUD endpoints
 - ✅ Program.cs configured with services
 - ✅ Swagger/OpenAPI documentation enabled
@@ -44,6 +49,7 @@
 - ✅ MediatR pipeline configured
 
 ### 6. Database Schema
+
 - ✅ All entities properly mapped
 - ✅ Relationships configured (Cascade delete)
 - ✅ Indexes created for performance:
@@ -56,6 +62,7 @@
 - ✅ Default values and constraints configured
 
 ### 7. Documentation
+
 - ✅ Comprehensive README.md
 - ✅ Project structure documented
 - ✅ Setup instructions provided
@@ -65,35 +72,42 @@
 ## 📦 Installed Packages
 
 ### Application
+
 - MediatR 13.1.0
 - FluentValidation.DependencyInjectionExtensions 12.1.0
 
 ### Infrastructure
+
 - Microsoft.EntityFrameworkCore 9.0.10
 - Microsoft.EntityFrameworkCore.Design 9.0.10
 - Npgsql.EntityFrameworkCore.PostgreSQL 9.0.4
 
 ### API
+
 - Swashbuckle.AspNetCore 9.0.6
 - Microsoft.EntityFrameworkCore.Design 9.0.10
 
 ### Global Tools
+
 - dotnet-ef 9.0.10
 
 ## 🏗️ Architecture Highlights
 
 1. **Clean Architecture Principles**:
+
    - Domain layer has no dependencies
    - Application depends only on Domain
    - Infrastructure depends on Application and Domain
    - API depends on Application and Infrastructure
 
 2. **CQRS Pattern**:
+
    - Commands for write operations
    - Queries for read operations
    - Handlers for each command/query
 
 3. **Repository Pattern**:
+
    - Generic repository for common operations
    - Unit of Work for transaction management
 
@@ -106,6 +120,7 @@
 ## 🔧 Next Steps to Complete the API
 
 ### Authentication & Authorization
+
 - [ ] Implement JWT Bearer authentication
 - [ ] Add BCrypt for password hashing
 - [ ] Create User registration endpoint
@@ -115,12 +130,14 @@
 - [ ] Add [Authorize] attributes to protected endpoints
 
 ### Workspace Features
+
 - [ ] Implement UpdateWorkspaceCommand and handler
 - [ ] Implement DeleteWorkspaceCommand and handler
 - [ ] Add workspace ownership validation
 - [ ] Add pagination to GetAllWorkspaces
 
 ### Chat History Management
+
 - [ ] Create ChatHistory endpoints
 - [ ] Implement CreateChatHistoryCommand
 - [ ] Implement GetChatHistoriesQuery
@@ -129,6 +146,7 @@
 - [ ] Add auto-naming from first query
 
 ### Message Management
+
 - [ ] Create Message endpoints
 - [ ] Implement CreateMessageCommand
 - [ ] Implement GetMessagesQuery
@@ -136,6 +154,7 @@
 - [ ] Format References JSON properly
 
 ### PDF Upload
+
 - [ ] Create PDF upload endpoint
 - [ ] Implement file validation (type, size)
 - [ ] Add chunked upload support
@@ -146,6 +165,7 @@
 - [ ] Add PDF selection logic
 
 ### LLM Integration
+
 - [ ] Create LLM gateway controller
 - [ ] Implement HttpClient for Python service
 - [ ] Add streaming response support (SSE)
@@ -154,6 +174,7 @@
 - [ ] Handle error responses
 
 ### Logging & Monitoring
+
 - [ ] Install Serilog packages
 - [ ] Configure Serilog with Elasticsearch sink
 - [ ] Add structured logging
@@ -164,6 +185,7 @@
 - [ ] Configure log retention
 
 ### Testing
+
 - [ ] Add xUnit test project
 - [ ] Create unit tests for handlers
 - [ ] Create integration tests for API
@@ -171,6 +193,7 @@
 - [ ] Mock repository and services
 
 ### Performance & Security
+
 - [ ] Add caching (Redis/In-Memory)
 - [ ] Implement rate limiting
 - [ ] Add input sanitization
@@ -180,6 +203,7 @@
 - [ ] Add health check endpoints
 
 ### DevOps
+
 - [ ] Create Dockerfile for API
 - [ ] Create docker-compose.yml
 - [ ] Add CI/CD pipeline configuration
@@ -212,19 +236,20 @@ dotnet ef database update --project Infrastructure --startup-project API
 
 ## 📊 Current API Endpoints
 
-| Method | Endpoint | Status | Notes |
-|--------|----------|--------|-------|
-| GET | /api/workspaces | ✅ Working | Returns all workspaces |
-| GET | /api/workspaces/{id} | ✅ Working | Returns workspace detail |
-| POST | /api/workspaces | ✅ Working | Creates workspace |
-| PUT | /api/workspaces/{id} | ⚠️ Stub | Returns NoContent |
-| DELETE | /api/workspaces/{id} | ⚠️ Stub | Returns NoContent |
+| Method | Endpoint             | Status     | Notes                    |
+| ------ | -------------------- | ---------- | ------------------------ |
+| GET    | /api/workspaces      | ✅ Working | Returns all workspaces   |
+| GET    | /api/workspaces/{id} | ✅ Working | Returns workspace detail |
+| POST   | /api/workspaces      | ✅ Working | Creates workspace        |
+| PUT    | /api/workspaces/{id} | ⚠️ Stub    | Returns NoContent        |
+| DELETE | /api/workspaces/{id} | ⚠️ Stub    | Returns NoContent        |
 
 ## 🔑 Environment Setup Required
 
 Before running the application, ensure:
 
 1. **PostgreSQL Database**:
+
    ```bash
    docker run --name rag-postgres \
      -e POSTGRES_DB=rag_chatbot \
@@ -235,6 +260,7 @@ Before running the application, ensure:
    ```
 
 2. **Apply Migrations**:
+
    ```bash
    dotnet ef database update --project Infrastructure --startup-project API
    ```

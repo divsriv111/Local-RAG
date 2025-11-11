@@ -24,7 +24,7 @@ public class GetWorkspaceByIdQueryHandler : IRequestHandler<GetWorkspaceByIdQuer
     public async Task<WorkspaceDetailDto?> Handle(GetWorkspaceByIdQuery request, CancellationToken cancellationToken)
     {
         var workspace = await _workspaceRepository.GetByIdAsync(request.Id, cancellationToken);
-        
+
         if (workspace == null || workspace.UserId != request.UserId)
             return null;
 

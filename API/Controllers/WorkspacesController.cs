@@ -34,10 +34,10 @@ public class WorkspacesController : ControllerBase
         var userId = Guid.NewGuid(); // Placeholder
         var query = new GetWorkspaceByIdQuery(id, userId);
         var workspace = await _mediator.Send(query);
-        
+
         if (workspace == null)
             return NotFound();
-            
+
         return Ok(workspace);
     }
 

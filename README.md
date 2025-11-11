@@ -7,6 +7,7 @@ This is an enterprise-grade backend API for a RAG (Retrieval-Augmented Generatio
 The solution follows **Clean Architecture** with clear separation of concerns:
 
 ### Domain Layer
+
 - **Location**: `Domain/` project
 - **Purpose**: Contains core business entities and interfaces
 - **Entities**:
@@ -15,11 +16,12 @@ The solution follows **Clean Architecture** with clear separation of concerns:
   - `ChatHistory`: Conversation threads within workspaces
   - `PDFDocument`: Uploaded PDF file metadata
   - `Message`: Individual chat messages with AI responses
-- **Interfaces**: 
+- **Interfaces**:
   - `IRepository<T>`: Generic repository pattern
   - `IUnitOfWork`: Transaction management
 
 ### Application Layer
+
 - **Location**: `Application/` project
 - **Purpose**: Business logic, DTOs, and CQRS implementation
 - **Features**:
@@ -32,6 +34,7 @@ The solution follows **Clean Architecture** with clear separation of concerns:
   - `GetWorkspaceByIdQuery`
 
 ### Infrastructure Layer
+
 - **Location**: `Infrastructure/` project
 - **Purpose**: Data access and external services
 - **Key Components**:
@@ -42,6 +45,7 @@ The solution follows **Clean Architecture** with clear separation of concerns:
 - **ORM**: Entity Framework Core 9
 
 ### API Layer
+
 - **Location**: `API/` project
 - **Purpose**: HTTP endpoints, middleware, DI configuration
 - **Features**:
@@ -122,6 +126,7 @@ dotnet run --project API
 ```
 
 The API will be available at:
+
 - **HTTP**: http://localhost:5000
 - **Swagger UI**: http://localhost:5000/swagger
 
@@ -140,6 +145,7 @@ User (1) ────────> (*) Workspace
 ### Entity Details
 
 **User**
+
 - Id (Guid, PK)
 - Username (string, unique, indexed)
 - Email (string, unique, indexed)
@@ -147,12 +153,14 @@ User (1) ────────> (*) Workspace
 - CreatedAt, UpdatedAt (DateTime)
 
 **Workspace**
+
 - Id (Guid, PK)
 - Name (string, max 100 chars)
 - UserId (Guid, FK → User, indexed)
 - CreatedAt, UpdatedAt (DateTime)
 
 **ChatHistory**
+
 - Id (Guid, PK)
 - WorkspaceId (Guid, FK → Workspace, indexed)
 - Name (string, max 200 chars)
@@ -161,6 +169,7 @@ User (1) ────────> (*) Workspace
 - IsArchived (bool, default: false)
 
 **PDFDocument**
+
 - Id (Guid, PK)
 - WorkspaceId (Guid, FK → Workspace, indexed)
 - FileName (string, max 255 chars)
@@ -170,6 +179,7 @@ User (1) ────────> (*) Workspace
 - IsSelected (bool, default: false)
 
 **Message**
+
 - Id (Guid, PK)
 - ChatHistoryId (Guid, FK → ChatHistory, indexed)
 - Content (string)
@@ -191,18 +201,22 @@ User (1) ────────> (*) Workspace
 ## 📦 NuGet Packages
 
 ### Domain Layer
+
 - None (pure C# POCOs)
 
 ### Application Layer
+
 - `MediatR` - CQRS implementation
 - `FluentValidation` - Input validation
 
 ### Infrastructure Layer
+
 - `Microsoft.EntityFrameworkCore` - ORM
 - `Microsoft.EntityFrameworkCore.Design` - Design-time tools
 - `Npgsql.EntityFrameworkCore.PostgreSQL` - PostgreSQL provider
 
 ### API Layer
+
 - `Swashbuckle.AspNetCore` - Swagger/OpenAPI
 - `Microsoft.EntityFrameworkCore.Design` - EF migrations
 
@@ -210,15 +224,16 @@ User (1) ────────> (*) Workspace
 
 ### Workspaces
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/workspaces` | Get all workspaces for user |
-| GET | `/api/workspaces/{id}` | Get workspace details |
-| POST | `/api/workspaces` | Create new workspace |
-| PUT | `/api/workspaces/{id}` | Update workspace name |
-| DELETE | `/api/workspaces/{id}` | Delete workspace |
+| Method | Endpoint               | Description                 |
+| ------ | ---------------------- | --------------------------- |
+| GET    | `/api/workspaces`      | Get all workspaces for user |
+| GET    | `/api/workspaces/{id}` | Get workspace details       |
+| POST   | `/api/workspaces`      | Create new workspace        |
+| PUT    | `/api/workspaces/{id}` | Update workspace name       |
+| DELETE | `/api/workspaces/{id}` | Delete workspace            |
 
 **Query Parameters** (GET /api/workspaces):
+
 - `search` (optional): Filter by workspace name
 
 ## 🔧 Development
