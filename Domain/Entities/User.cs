@@ -11,4 +11,5 @@ public class User
 
     // Navigation properties
     public ICollection<Workspace> Workspaces { get; set; } = new List<Workspace>();
+    public ICollection<RefreshToken> RefreshTokens { get; set; } = new List<RefreshToken>();
 }
