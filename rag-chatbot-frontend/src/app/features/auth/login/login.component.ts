@@ -1,108 +1,105 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
-import { Router, RouterModule } from '@angular/router';
+import { Router, RouterModule, ActivatedRoute } from '@angular/router';
+import { Card } from 'primeng/card';
+import { InputText } from 'primeng/inputtext';
+import { Password } from 'primeng/password';
+import { Button } from 'primeng/button';
+import { Toast } from 'primeng/toast';
+import { MessageService } from 'primeng/api';
 import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule],
-  template: `
-    <div class="container mt-5">
-      <div class="row justify-content-center">
-        <div class="col-md-6">
-          <div class="card">
-            <div class="card-body">
-              <h2 class="card-title text-center mb-4">Login</h2>
-              <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
-                <div class="mb-3">
-                  <label for="username" class="form-label">Username</label>
-                  <input
-                    type="text"
-                    class="form-control"
-                    id="username"
-                    formControlName="username"
-                    [class.is-invalid]="
-                      loginForm.get('username')?.invalid && loginForm.get('username')?.touched
-                    "
-                  />
-                  <div
-                    class="invalid-feedback"
-                    *ngIf="loginForm.get('username')?.errors?.['required']"
-                  >
-                    Username is required
-                  </div>
-                </div>
-                <div class="mb-3">
-                  <label for="password" class="form-label">Password</label>
-                  <input
-                    type="password"
-                    class="form-control"
-                    id="password"
-                    formControlName="password"
-                    [class.is-invalid]="
-                      loginForm.get('password')?.invalid && loginForm.get('password')?.touched
-                    "
-                  />
-                  <div
-                    class="invalid-feedback"
-                    *ngIf="loginForm.get('password')?.errors?.['required']"
-                  >
-                    Password is required
-                  </div>
-                </div>
-                <div class="alert alert-danger" *ngIf="errorMessage">
-                  {{ errorMessage }}
-                </div>
-                <button
-                  type="submit"
-                  class="btn btn-primary w-100"
-                  [disabled]="loginForm.invalid || isLoading"
-                >
-                  <span *ngIf="isLoading">Logging in...</span>
-                  <span *ngIf="!isLoading">Login</span>
-                </button>
-              </form>
-              <div class="text-center mt-3">
-                <a routerLink="/auth/register">Don't have an account? Register</a>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  `,
-  styles: [],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    RouterModule,
+    Card,
+    InputText,
+    Password,
+    Button,
+    Toast,
+  ],
+  providers: [MessageService],
+  templateUrl: './login.component.html',
+  styleUrls: ['./login.component.scss'],
 })
-export class LoginComponent {
+export class LoginComponent implements OnInit {
   loginForm: FormGroup;
   isLoading = false;
-  errorMessage = '';
 
-  constructor(private fb: FormBuilder, private authService: AuthService, private router: Router) {
+  constructor(
+    private fb: FormBuilder,
+    private authService: AuthService,
+    private router: Router,
+    private route: ActivatedRoute,
+    private messageService: MessageService
+  ) {
     this.loginForm = this.fb.group({
       username: ['', [Validators.required]],
       password: ['', [Validators.required]],
     });
   }
 
+  ngOnInit(): void {
+    // Check if there's a message from query params (e.g., session expired)
+    this.route.queryParams.subscribe((params) => {
+      if (params['message']) {
+        this.messageService.add({
+          severity: 'warn',
+          summary: 'Warning',
+          detail: params['message'],
+          life: 5000,
+        });
+      }
+    });
+  }
+
   onSubmit(): void {
     if (this.loginForm.valid) {
       this.isLoading = true;
-      this.errorMessage = '';
 
       const { username, password } = this.loginForm.value;
 
       this.authService.login(username, password).subscribe({
         next: () => {
-          this.router.navigate(['/workspaces']);
+          this.isLoading = false;
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Success',
+            detail: 'Login successful!',
+            life: 3000,
+          });
+          setTimeout(() => {
+            this.router.navigate(['/workspaces']);
+          }, 500);
         },
         error: (error) => {
           this.isLoading = false;
-          this.errorMessage = error.error?.message || 'Login failed. Please try again.';
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: error.error?.message || 'Login failed. Please check your credentials.',
+            life: 5000,
+          });
         },
       });
+    } else {
+      // Mark all fields as touched to show validation errors
+      Object.keys(this.loginForm.controls).forEach((key) => {
+        this.loginForm.get(key)?.markAsTouched();
+      });
     }
+  }
+
+  get username() {
+    return this.loginForm.get('username');
+  }
+
+  get password() {
+    return this.loginForm.get('password');
   }
 }

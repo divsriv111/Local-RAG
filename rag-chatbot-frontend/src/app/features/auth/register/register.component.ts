@@ -1,165 +1,99 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import {
+  FormBuilder,
+  FormGroup,
+  Validators,
+  ReactiveFormsModule,
+  AbstractControl,
+  ValidationErrors,
+  ValidatorFn,
+} from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
-import { AuthService, RegisterDTO } from '../../../core/services/auth.service';
+import { Card } from 'primeng/card';
+import { InputText } from 'primeng/inputtext';
+import { Password } from 'primeng/password';
+import { Button } from 'primeng/button';
+import { Toast } from 'primeng/toast';
+import { MessageService } from 'primeng/api';
+import { AuthService } from '../../../core/services/auth.service';
+import { RegisterDTO } from '../../../core/models/auth.models';
 
 @Component({
   selector: 'app-register',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule],
-  template: `
-    <div class="container mt-5">
-      <div class="row justify-content-center">
-        <div class="col-md-6">
-          <div class="card">
-            <div class="card-body">
-              <h2 class="card-title text-center mb-4">Register</h2>
-              <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
-                <div class="mb-3">
-                  <label for="username" class="form-label">Username</label>
-                  <input
-                    type="text"
-                    class="form-control"
-                    id="username"
-                    formControlName="username"
-                    [class.is-invalid]="
-                      registerForm.get('username')?.invalid && registerForm.get('username')?.touched
-                    "
-                  />
-                  <div
-                    class="invalid-feedback"
-                    *ngIf="registerForm.get('username')?.errors?.['required']"
-                  >
-                    Username is required
-                  </div>
-                </div>
-                <div class="mb-3">
-                  <label for="email" class="form-label">Email</label>
-                  <input
-                    type="email"
-                    class="form-control"
-                    id="email"
-                    formControlName="email"
-                    [class.is-invalid]="
-                      registerForm.get('email')?.invalid && registerForm.get('email')?.touched
-                    "
-                  />
-                  <div
-                    class="invalid-feedback"
-                    *ngIf="registerForm.get('email')?.errors?.['required']"
-                  >
-                    Email is required
-                  </div>
-                  <div
-                    class="invalid-feedback"
-                    *ngIf="registerForm.get('email')?.errors?.['email']"
-                  >
-                    Invalid email format
-                  </div>
-                </div>
-                <div class="mb-3">
-                  <label for="password" class="form-label">Password</label>
-                  <input
-                    type="password"
-                    class="form-control"
-                    id="password"
-                    formControlName="password"
-                    [class.is-invalid]="
-                      registerForm.get('password')?.invalid && registerForm.get('password')?.touched
-                    "
-                  />
-                  <div
-                    class="invalid-feedback"
-                    *ngIf="registerForm.get('password')?.errors?.['required']"
-                  >
-                    Password is required
-                  </div>
-                  <div
-                    class="invalid-feedback"
-                    *ngIf="registerForm.get('password')?.errors?.['minlength']"
-                  >
-                    Password must be at least 8 characters
-                  </div>
-                </div>
-                <div class="mb-3">
-                  <label for="confirmPassword" class="form-label">Confirm Password</label>
-                  <input
-                    type="password"
-                    class="form-control"
-                    id="confirmPassword"
-                    formControlName="confirmPassword"
-                    [class.is-invalid]="
-                      registerForm.get('confirmPassword')?.invalid &&
-                      registerForm.get('confirmPassword')?.touched
-                    "
-                  />
-                  <div
-                    class="invalid-feedback"
-                    *ngIf="registerForm.errors?.['passwordMismatch'] && registerForm.get('confirmPassword')?.touched"
-                  >
-                    Passwords do not match
-                  </div>
-                </div>
-                <div class="alert alert-danger" *ngIf="errorMessage">
-                  {{ errorMessage }}
-                </div>
-                <div class="alert alert-success" *ngIf="successMessage">
-                  {{ successMessage }}
-                </div>
-                <button
-                  type="submit"
-                  class="btn btn-primary w-100"
-                  [disabled]="registerForm.invalid || isLoading"
-                >
-                  <span *ngIf="isLoading">Registering...</span>
-                  <span *ngIf="!isLoading">Register</span>
-                </button>
-              </form>
-              <div class="text-center mt-3">
-                <a routerLink="/auth/login">Already have an account? Login</a>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  `,
-  styles: [],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    RouterModule,
+    Card,
+    InputText,
+    Password,
+    Button,
+    Toast,
+  ],
+  providers: [MessageService],
+  templateUrl: './register.component.html',
+  styleUrls: ['./register.component.scss'],
 })
 export class RegisterComponent {
   registerForm: FormGroup;
   isLoading = false;
-  errorMessage = '';
-  successMessage = '';
 
-  constructor(private fb: FormBuilder, private authService: AuthService, private router: Router) {
+  constructor(
+    private fb: FormBuilder,
+    private authService: AuthService,
+    private router: Router,
+    private messageService: MessageService
+  ) {
     this.registerForm = this.fb.group(
       {
-        username: ['', [Validators.required]],
+        username: ['', [Validators.required, Validators.minLength(3)]],
         email: ['', [Validators.required, Validators.email]],
-        password: ['', [Validators.required, Validators.minLength(8)]],
+        password: [
+          '',
+          [Validators.required, Validators.minLength(8), this.passwordStrengthValidator()],
+        ],
         confirmPassword: ['', [Validators.required]],
       },
       { validators: this.passwordMatchValidator }
     );
   }
 
-  passwordMatchValidator(form: FormGroup) {
+  // Custom validator for password strength
+  passwordStrengthValidator(): ValidatorFn {
+    return (control: AbstractControl): ValidationErrors | null => {
+      const value = control.value;
+      if (!value) {
+        return null;
+      }
+
+      const hasUpperCase = /[A-Z]/.test(value);
+      const hasLowerCase = /[a-z]/.test(value);
+      const hasNumeric = /[0-9]/.test(value);
+      const hasSpecialChar = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(value);
+
+      const passwordValid = hasUpperCase && hasLowerCase && hasNumeric && hasSpecialChar;
+
+      return !passwordValid ? { passwordStrength: true } : null;
+    };
+  }
+
+  // Custom validator to check if passwords match
+  passwordMatchValidator(form: AbstractControl): ValidationErrors | null {
     const password = form.get('password');
     const confirmPassword = form.get('confirmPassword');
 
-    if (password && confirmPassword && password.value !== confirmPassword.value) {
-      return { passwordMismatch: true };
+    if (!password || !confirmPassword) {
+      return null;
     }
-    return null;
+
+    return password.value === confirmPassword.value ? null : { passwordMismatch: true };
   }
 
   onSubmit(): void {
     if (this.registerForm.valid) {
       this.isLoading = true;
-      this.errorMessage = '';
-      this.successMessage = '';
 
       const { username, email, password } = this.registerForm.value;
       const registerData: RegisterDTO = { username, email, password };
@@ -167,16 +101,47 @@ export class RegisterComponent {
       this.authService.register(registerData).subscribe({
         next: () => {
           this.isLoading = false;
-          this.successMessage = 'Registration successful! Redirecting to login...';
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Success',
+            detail: 'Registration successful! Redirecting to login...',
+            life: 3000,
+          });
           setTimeout(() => {
             this.router.navigate(['/auth/login']);
           }, 2000);
         },
         error: (error) => {
           this.isLoading = false;
-          this.errorMessage = error.error?.message || 'Registration failed. Please try again.';
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: error.error?.message || 'Registration failed. Please try again.',
+            life: 5000,
+          });
         },
       });
+    } else {
+      // Mark all fields as touched to show validation errors
+      Object.keys(this.registerForm.controls).forEach((key) => {
+        this.registerForm.get(key)?.markAsTouched();
+      });
     }
+  }
+
+  get username() {
+    return this.registerForm.get('username');
+  }
+
+  get email() {
+    return this.registerForm.get('email');
+  }
+
+  get password() {
+    return this.registerForm.get('password');
+  }
+
+  get confirmPassword() {
+    return this.registerForm.get('confirmPassword');
   }
 }

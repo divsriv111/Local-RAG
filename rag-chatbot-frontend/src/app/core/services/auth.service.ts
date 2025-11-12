@@ -1,25 +1,9 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, BehaviorSubject, tap } from 'rxjs';
+import { Router } from '@angular/router';
 import { environment } from '../../../environments/environment';
-
-export interface AuthResponse {
-  token: string;
-  refreshToken: string;
-  user: User;
-}
-
-export interface User {
-  id: string;
-  username: string;
-  email: string;
-}
-
-export interface RegisterDTO {
-  username: string;
-  email: string;
-  password: string;
-}
+import { AuthResponse, User, RegisterDTO } from '../models/auth.models';
 
 @Injectable({
   providedIn: 'root',
@@ -32,7 +16,7 @@ export class AuthService {
   private currentUserSubject = new BehaviorSubject<User | null>(null);
   public currentUser$ = this.currentUserSubject.asObservable();
 
-  constructor(private http: HttpClient) {
+  constructor(private http: HttpClient, private router: Router) {
     this.loadCurrentUser();
   }
 
@@ -54,6 +38,7 @@ export class AuthService {
     localStorage.removeItem(this.TOKEN_KEY);
     localStorage.removeItem(this.REFRESH_TOKEN_KEY);
     this.currentUserSubject.next(null);
+    this.router.navigate(['/auth/login']);
   }
 
   isAuthenticated(): boolean {

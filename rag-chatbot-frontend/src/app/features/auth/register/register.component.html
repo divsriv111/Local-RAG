@@ -1,0 +1,132 @@
+<div class="register-container">
+    <p-toast />
+    <div class="container-fluid">
+        <div class="row justify-content-center align-items-center min-vh-100">
+            <div class="col-12 col-sm-10 col-md-8 col-lg-6 col-xl-5 col-xxl-4">
+                <p-card>
+                    <ng-template pTemplate="header">
+                        <div class="text-center pt-4 pb-2">
+                            <h2 class="mb-1">Create Account</h2>
+                            <p class="text-muted">Sign up to get started</p>
+                        </div>
+                    </ng-template>
+
+                    <ng-template pTemplate="content">
+                        <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
+                            <!-- Username Field -->
+                            <div class="mb-4">
+                                <label for="username" class="form-label fw-semibold">
+                                    Username <span class="text-danger">*</span>
+                                </label>
+                                <input pInputText id="username" formControlName="username"
+                                    placeholder="Choose a username" class="w-100"
+                                    [class.ng-invalid]="username?.invalid && username?.touched"
+                                    [class.ng-dirty]="username?.touched" />
+                                <small *ngIf="username?.hasError('required') && username?.touched"
+                                    class="text-danger d-block mt-1">
+                                    <i class="pi pi-exclamation-circle"></i>
+                                    Username is required
+                                </small>
+                                <small *ngIf="username?.hasError('minlength') && username?.touched"
+                                    class="text-danger d-block mt-1">
+                                    <i class="pi pi-exclamation-circle"></i>
+                                    Username must be at least 3 characters
+                                </small>
+                            </div>
+
+                            <!-- Email Field -->
+                            <div class="mb-4">
+                                <label for="email" class="form-label fw-semibold">
+                                    Email <span class="text-danger">*</span>
+                                </label>
+                                <input pInputText id="email" type="email" formControlName="email"
+                                    placeholder="Enter your email" class="w-100"
+                                    [class.ng-invalid]="email?.invalid && email?.touched"
+                                    [class.ng-dirty]="email?.touched" />
+                                <small *ngIf="email?.hasError('required') && email?.touched"
+                                    class="text-danger d-block mt-1">
+                                    <i class="pi pi-exclamation-circle"></i>
+                                    Email is required
+                                </small>
+                                <small *ngIf="email?.hasError('email') && email?.touched"
+                                    class="text-danger d-block mt-1">
+                                    <i class="pi pi-exclamation-circle"></i>
+                                    Please enter a valid email address
+                                </small>
+                            </div>
+
+                            <!-- Password Field -->
+                            <div class="mb-4">
+                                <label for="password" class="form-label fw-semibold">
+                                    Password <span class="text-danger">*</span>
+                                </label>
+                                <p-password formControlName="password" placeholder="Create a strong password"
+                                    [toggleMask]="true" [feedback]="true" styleClass="w-100" inputStyleClass="w-100"
+                                    [class.ng-invalid]="password?.invalid && password?.touched"
+                                    [class.ng-dirty]="password?.touched" promptLabel="Choose a password"
+                                    weakLabel="Weak" mediumLabel="Medium" strongLabel="Strong" />
+                                <small *ngIf="password?.hasError('required') && password?.touched"
+                                    class="text-danger d-block mt-1">
+                                    <i class="pi pi-exclamation-circle"></i>
+                                    Password is required
+                                </small>
+                                <small *ngIf="password?.hasError('minlength') && password?.touched"
+                                    class="text-danger d-block mt-1">
+                                    <i class="pi pi-exclamation-circle"></i>
+                                    Password must be at least 8 characters
+                                </small>
+                                <small *ngIf="password?.hasError('passwordStrength') && password?.touched"
+                                    class="text-danger d-block mt-1">
+                                    <i class="pi pi-exclamation-circle"></i>
+                                    Password must contain uppercase, lowercase, number, and special character
+                                </small>
+                            </div>
+
+                            <!-- Confirm Password Field -->
+                            <div class="mb-4">
+                                <label for="confirmPassword" class="form-label fw-semibold">
+                                    Confirm Password <span class="text-danger">*</span>
+                                </label>
+                                <p-password formControlName="confirmPassword" placeholder="Confirm your password"
+                                    [toggleMask]="true" [feedback]="false" styleClass="w-100" inputStyleClass="w-100"
+                                    [class.ng-invalid]="
+                    (confirmPassword?.invalid || registerForm.hasError('passwordMismatch')) &&
+                    confirmPassword?.touched
+                  " [class.ng-dirty]="confirmPassword?.touched" />
+                                <small *ngIf="confirmPassword?.hasError('required') && confirmPassword?.touched"
+                                    class="text-danger d-block mt-1">
+                                    <i class="pi pi-exclamation-circle"></i>
+                                    Please confirm your password
+                                </small>
+                                <small *ngIf="
+                    registerForm.hasError('passwordMismatch') &&
+                    confirmPassword?.touched &&
+                    !confirmPassword?.hasError('required')
+                  " class="text-danger d-block mt-1">
+                                    <i class="pi pi-exclamation-circle"></i>
+                                    Passwords do not match
+                                </small>
+                            </div>
+
+                            <!-- Register Button -->
+                            <div class="mb-3">
+                                <p-button type="submit" label="Create Account" icon="pi pi-user-plus"
+                                    [loading]="isLoading" [disabled]="registerForm.invalid || isLoading"
+                                    styleClass="w-100 p-button-lg" />
+                            </div>
+                        </form>
+                    </ng-template>
+
+                    <ng-template pTemplate="footer">
+                        <div class="text-center">
+                            <p class="mb-0">
+                                Already have an account?
+                                <a routerLink="/auth/login" class="text-primary fw-semibold"> Login here </a>
+                            </p>
+                        </div>
+                    </ng-template>
+                </p-card>
+            </div>
+        </div>
+    </div>
+</div>
