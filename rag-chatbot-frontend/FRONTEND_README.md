@@ -58,27 +58,33 @@ src/
 ## Available Scripts
 
 ### Development Server
+
 ```bash
 npm start
 # or
 ng serve
 ```
+
 Navigate to `http://localhost:4200/`
 
 ### Build
+
 ```bash
 npm run build
 # or
 ng build
 ```
+
 Build artifacts will be stored in the `dist/` directory.
 
 ### Production Build
+
 ```bash
 npm run build -- --configuration production
 ```
 
 ### Run Tests
+
 ```bash
 npm test
 # or
@@ -86,6 +92,7 @@ ng test
 ```
 
 ### Code Linting
+
 ```bash
 ng lint
 ```
@@ -93,22 +100,26 @@ ng lint
 ## Features Implemented
 
 ### Core Module
+
 - ✅ Authentication Service with JWT
 - ✅ Auth Guard for route protection
 - ✅ HTTP Interceptor for adding Authorization headers
 - ✅ Error handling and token expiration checks
 
 ### Auth Module
+
 - ✅ Login Component
 - ✅ Register Component
 - ✅ Profile Component (stub)
 - ✅ Lazy-loaded routing
 
 ### Shared Module
+
 - ✅ Common imports (Forms, ReactiveFormsModule)
 - ✅ Ready for shared components, pipes, and directives
 
 ### Workspace & Chat Modules
+
 - ✅ Module structure created
 - ⏳ Components to be implemented
 
@@ -117,29 +128,33 @@ ng lint
 ### Environment Variables
 
 **Development** (`src/environments/environment.ts`):
+
 ```typescript
 export const environment = {
   production: false,
-  apiUrl: 'http://localhost:5000'
+  apiUrl: 'http://localhost:5000',
 };
 ```
 
 **Production** (`src/environments/environment.prod.ts`):
+
 ```typescript
 export const environment = {
   production: true,
-  apiUrl: 'https://your-production-api-url.com'
+  apiUrl: 'https://your-production-api-url.com',
 };
 ```
 
 ### Styling
 
 The application uses:
+
 - **PrimeNG Theme**: Lara Light Blue
 - **Bootstrap 5**: For responsive grid
 - **Custom SCSS**: Global styles in `styles.scss`
 
 All CSS dependencies are configured in `angular.json`:
+
 - PrimeNG theme
 - PrimeNG core styles
 - PrimeIcons
@@ -161,19 +176,23 @@ Protected routes require authentication via `authGuard`.
 ## Next Steps
 
 ### To Implement:
+
 1. **Workspace Module**
+
    - Workspace list component
    - Workspace detail component
    - Create workspace dialog
    - Workspace service
 
 2. **Chat Module**
+
    - Chat interface component
    - Message display component
    - PDF upload component
    - Chat history sidebar
 
 3. **Shared Components**
+
    - Loading spinner
    - Error message component
    - Confirmation dialog

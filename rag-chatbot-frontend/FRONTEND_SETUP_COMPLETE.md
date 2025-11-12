@@ -7,12 +7,14 @@ Successfully created an Angular v20 workspace with PrimeNG and Bootstrap integra
 ## What Was Created
 
 ### 1. Angular Workspace
+
 - **Framework**: Angular v20 (zoneless)
 - **Routing**: Enabled with lazy loading
 - **Style**: SCSS
 - **Location**: `/Users/divyanshusrivastava/Local RAG/rag-chatbot-frontend`
 
 ### 2. Dependencies Installed
+
 - ✅ **PrimeNG** v18.x - UI component library
 - ✅ **PrimeIcons** v7.x - Icon library
 - ✅ **Bootstrap** v5.x - Responsive grid system
@@ -23,7 +25,9 @@ Successfully created an Angular v20 workspace with PrimeNG and Bootstrap integra
 ### 3. Module Structure Created
 
 #### Core Module (`src/app/core/`)
+
 Contains singleton services, guards, and interceptors:
+
 - **Services**:
   - `auth.service.ts` - JWT authentication, login, register, token management
 - **Guards**:
@@ -33,13 +37,16 @@ Contains singleton services, guards, and interceptors:
 - `core.module.ts` - Core module definition
 
 #### Shared Module (`src/app/shared/`)
+
 For reusable components, pipes, and directives:
+
 - `shared.module.ts` - Exports common imports (Forms, ReactiveFormsModule)
 - Ready for shared components
 
 #### Features Module (`src/app/features/`)
 
 **Auth Module** (`features/auth/`):
+
 - ✅ `login/login.component.ts` - Login form with validation
 - ✅ `register/register.component.ts` - Registration form with password matching
 - ✅ `profile/profile.component.ts` - User profile (stub)
@@ -47,31 +54,39 @@ For reusable components, pipes, and directives:
 - ✅ `auth-routing.module.ts` - Lazy-loaded routing
 
 **Workspace Module** (`features/workspace/`):
+
 - ✅ `workspace.module.ts` - Workspace feature module (ready for components)
 
 **Chat Module** (`features/chat/`):
+
 - ✅ `chat.module.ts` - Chat feature module (ready for components)
 
 ### 4. Configuration Files
 
 #### angular.json
+
 Configured with:
+
 - ✅ PrimeIcons CSS
 - ✅ Bootstrap CSS
 - ✅ Global SCSS styles
 
 #### Environment Files
+
 - ✅ `src/environments/environment.ts` - Development config (API: http://localhost:5000)
 - ✅ `src/environments/environment.prod.ts` - Production config (placeholder)
 
 #### App Configuration
+
 - ✅ `app.config.ts` - HTTP client with auth interceptor, animations
 - ✅ `app.routes.ts` - Routing with auth guard and lazy loading
 - ✅ `app.html` - Simple router outlet
 - ✅ `app.ts` - Main app component
 
 ### 5. Global Styles (`src/styles.scss`)
+
 Added:
+
 - Reset styles
 - Responsive utilities (mobile-hidden, mobile-only)
 - Spacing utilities (mt-1 to mt-5, mb-1 to mb-5, p-1 to p-5)
@@ -128,18 +143,19 @@ rag-chatbot-frontend/
 
 ## Routes Configured
 
-| Path | Component | Protected | Lazy Loaded |
-|------|-----------|-----------|-------------|
-| `/` | → `/auth/login` | No | - |
-| `/auth/login` | LoginComponent | No | Yes |
-| `/auth/register` | RegisterComponent | No | Yes |
-| `/auth/profile` | ProfileComponent | No | Yes |
-| `/workspaces` | (to be created) | Yes | Yes |
-| `/chat` | (to be created) | Yes | Yes |
+| Path             | Component         | Protected | Lazy Loaded |
+| ---------------- | ----------------- | --------- | ----------- |
+| `/`              | → `/auth/login`   | No        | -           |
+| `/auth/login`    | LoginComponent    | No        | Yes         |
+| `/auth/register` | RegisterComponent | No        | Yes         |
+| `/auth/profile`  | ProfileComponent  | No        | Yes         |
+| `/workspaces`    | (to be created)   | Yes       | Yes         |
+| `/chat`          | (to be created)   | Yes       | Yes         |
 
 ## Features Implemented
 
 ### Authentication Service
+
 - ✅ Login with JWT token storage
 - ✅ Register new users
 - ✅ Token expiration check
@@ -148,6 +164,7 @@ rag-chatbot-frontend/
 - ✅ Auto-load user on app start
 
 ### Login Component
+
 - ✅ Reactive form with validation
 - ✅ Username and password fields
 - ✅ Error display
@@ -155,6 +172,7 @@ rag-chatbot-frontend/
 - ✅ Link to registration
 
 ### Register Component
+
 - ✅ Reactive form with validation
 - ✅ Email format validation
 - ✅ Password strength (min 8 characters)
@@ -163,11 +181,13 @@ rag-chatbot-frontend/
 - ✅ Redirect to login after registration
 
 ### Auth Guard
+
 - ✅ Protects routes requiring authentication
 - ✅ Redirects to login with returnUrl
 - ✅ Functional guard (modern Angular approach)
 
 ### Auth Interceptor
+
 - ✅ Adds Authorization header to all HTTP requests
 - ✅ Handles 401 errors (auto-logout)
 - ✅ Functional interceptor
@@ -192,11 +212,14 @@ Total: 549.79 kB | 109.09 kB
 ## Next Steps
 
 ### Immediate Next Steps
+
 1. **Run the application**:
+
    ```bash
    cd rag-chatbot-frontend
    npm start
    ```
+
    Navigate to: http://localhost:4200
 
 2. **Test authentication flow**:
@@ -207,6 +230,7 @@ Total: 549.79 kB | 109.09 kB
 ### Components to Implement
 
 #### Workspace Module
+
 - [ ] Workspace list component
 - [ ] Workspace detail component
 - [ ] Create workspace dialog
@@ -214,25 +238,30 @@ Total: 549.79 kB | 109.09 kB
 - [ ] Workspace routing
 
 #### Chat Module
+
 - [ ] Chat interface component
 - [ ] Message display component
 - [ ] Chat history sidebar
 - [ ] Chat service
 
 #### PDF Management
+
 - [ ] PDF upload component
 - [ ] PDF list component
 - [ ] PDF selection
 - [ ] PDF service
 
 #### Shared Components
+
 - [ ] Loading spinner
 - [ ] Toast notifications (PrimeNG Toast)
 - [ ] Confirmation dialog
 - [ ] Error display component
 
 ### Backend Integration
+
 Once the ASP.NET Core backend is running:
+
 1. Update `environment.ts` with correct API URL
 2. Test authentication endpoints
 3. Implement workspace CRUD operations
@@ -266,11 +295,13 @@ ng generate service core/services/workspace
 ## Architecture Notes
 
 ### Clean Architecture
+
 - **Core**: Singleton services, global configuration
 - **Shared**: Reusable UI components and utilities
 - **Features**: Business logic organized by feature
 
 ### Modern Angular Patterns
+
 - ✅ Zoneless change detection (Angular v20)
 - ✅ Standalone components for auth
 - ✅ Functional guards and interceptors
@@ -278,6 +309,7 @@ ng generate service core/services/workspace
 - ✅ Reactive forms with validation
 
 ### Security
+
 - ✅ JWT token stored in localStorage
 - ✅ Token expiration checking
 - ✅ Auto-logout on 401 errors
@@ -292,6 +324,7 @@ ng generate service core/services/workspace
 ## Contact & Support
 
 For questions about this setup, refer to:
+
 - Angular docs: https://angular.dev
 - PrimeNG docs: https://primeng.org
 - Bootstrap docs: https://getbootstrap.com

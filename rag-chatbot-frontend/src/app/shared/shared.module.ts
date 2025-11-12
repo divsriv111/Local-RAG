@@ -23,6 +23,6 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
     ReactiveFormsModule,
     // Export PrimeNG modules
     // Export shared components, pipes, and directives
-  ]
+  ],
 })
-export class SharedModule { }
+export class SharedModule {}

@@ -22,13 +22,13 @@ export interface RegisterDTO {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class AuthService {
   private readonly API_URL = `${environment.apiUrl}/api/auth`;
   private readonly TOKEN_KEY = 'access_token';
   private readonly REFRESH_TOKEN_KEY = 'refresh_token';
-  
+
   private currentUserSubject = new BehaviorSubject<User | null>(null);
   public currentUser$ = this.currentUserSubject.asObservable();
 
@@ -37,14 +37,13 @@ export class AuthService {
   }
 
   login(username: string, password: string): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`${this.API_URL}/login`, { username, password })
-      .pipe(
-        tap(response => {
-          this.setToken(response.token);
-          this.setRefreshToken(response.refreshToken);
-          this.currentUserSubject.next(response.user);
-        })
-      );
+    return this.http.post<AuthResponse>(`${this.API_URL}/login`, { username, password }).pipe(
+      tap((response) => {
+        this.setToken(response.token);
+        this.setRefreshToken(response.refreshToken);
+        this.currentUserSubject.next(response.user);
+      })
+    );
   }
 
   register(user: RegisterDTO): Observable<void> {
@@ -95,8 +94,8 @@ export class AuthService {
   private loadCurrentUser(): void {
     if (this.isAuthenticated()) {
       this.getCurrentUser().subscribe({
-        next: user => this.currentUserSubject.next(user),
-        error: () => this.logout()
+        next: (user) => this.currentUserSubject.next(user),
+        error: () => this.logout(),
       });
     }
   }

@@ -11,7 +11,6 @@ import { CommonModule } from '@angular/common';
       <p>Profile component - To be implemented</p>
     </div>
   `,
-  styles: []
+  styles: [],
 })
-export class ProfileComponent {
-}
+export class ProfileComponent {}

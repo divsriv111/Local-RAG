@@ -13,18 +13,15 @@ import { provideHttpClient, withInterceptors } from '@angular/common/http';
 
 @NgModule({
   declarations: [],
-  imports: [
-    CommonModule
-  ],
+  imports: [CommonModule],
   providers: [
     // Services
     // AuthService,
-    
+
     // HTTP Client with interceptors
-    provideHttpClient(
-      // withInterceptors([authInterceptor])
-    )
-  ]
+    provideHttpClient(),
+    // withInterceptors([authInterceptor])
+  ],
 })
 export class CoreModule {
   constructor(@Optional() @SkipSelf() parentModule: CoreModule) {

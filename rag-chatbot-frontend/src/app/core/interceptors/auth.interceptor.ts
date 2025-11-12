@@ -13,13 +13,13 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   if (token) {
     req = req.clone({
       setHeaders: {
-        Authorization: `Bearer ${token}`
-      }
+        Authorization: `Bearer ${token}`,
+      },
     });
   }
 
   return next(req).pipe(
-    catchError(error => {
+    catchError((error) => {
       if (error.status === 401) {
         // Unauthorized - redirect to login
         authService.logout();

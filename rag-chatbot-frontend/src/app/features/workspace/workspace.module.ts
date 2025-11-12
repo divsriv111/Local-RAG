@@ -4,9 +4,6 @@ import { SharedModule } from '../../shared/shared.module';
 
 @NgModule({
   declarations: [],
-  imports: [
-    CommonModule,
-    SharedModule
-  ]
+  imports: [CommonModule, SharedModule],
 })
-export class WorkspaceModule { }
+export class WorkspaceModule {}

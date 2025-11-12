@@ -1,22 +1,26 @@
 # Quick Start Guide
 
 ## Prerequisites
+
 - Node.js 18+ installed
 - npm or yarn
 
 ## Running the Application
 
 ### 1. Navigate to frontend directory
+
 ```bash
 cd "/Users/divyanshusrivastava/Local RAG/rag-chatbot-frontend"
 ```
 
 ### 2. Start development server
+
 ```bash
 npm start
 ```
 
 ### 3. Open browser
+
 Navigate to: **http://localhost:4200**
 
 ## Available Routes
@@ -43,7 +47,7 @@ Update `src/environments/environment.ts`:
 ```typescript
 export const environment = {
   production: false,
-  apiUrl: 'http://localhost:5000'  // Your ASP.NET Core API URL
+  apiUrl: 'http://localhost:5000', // Your ASP.NET Core API URL
 };
 ```
 
@@ -71,18 +75,21 @@ src/app/
 ## Troubleshooting
 
 ### Port already in use
+
 ```bash
 # Kill process on port 4200
 lsof -ti:4200 | xargs kill -9
 ```
 
 ### Node modules issues
+
 ```bash
 rm -rf node_modules package-lock.json
 npm install
 ```
 
 ### Build errors
+
 ```bash
 npm run build
 # Check errors and fix
