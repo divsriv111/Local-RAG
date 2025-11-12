@@ -30,6 +30,7 @@ public static class DependencyInjection
         services.AddScoped<IPasswordHasher, PasswordHasher>();
         services.AddScoped<IFileValidationService, FileValidationService>();
         services.AddScoped<IFileStorageService, FileStorageService>();
+        services.AddScoped<IApplicationLoggingService, ApplicationLoggingService>();
 
         // Add HttpClient for LLM Service with Polly retry and timeout policies
         services.AddHttpClient<ILlmService, LlmService>()
