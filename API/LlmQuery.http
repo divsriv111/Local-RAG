@@ -1,0 +1,103 @@
+### LLM Query API Tests
+
+@baseUrl = http://localhost:5000
+@token = {{auth_response.response.body.accessToken}}
+
+### 1. Health Check - Check if LLM service is available
+GET {{baseUrl}}/api/llm/health
+Authorization: Bearer {{token}}
+
+### 2. Query LLM (Non-Streaming)
+POST {{baseUrl}}/api/llm/query
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "query": "What is this document about?",
+  "selectedPdfIds": ["00000000-0000-0000-0000-000000000001"],
+  "workspaceId": "00000000-0000-0000-0000-000000000001",
+  "chatHistoryId": "00000000-0000-0000-0000-000000000001",
+  "llmModel": "gpt-4o-mini"
+}
+
+### 3. Query LLM with Streaming (SSE)
+POST {{baseUrl}}/api/llm/query
+Authorization: Bearer {{token}}
+Content-Type: application/json
+Accept: text/event-stream
+
+{
+  "query": "Summarize the main points from these documents.",
+  "selectedPdfIds": [
+    "00000000-0000-0000-0000-000000000001",
+    "00000000-0000-0000-0000-000000000002"
+  ],
+  "workspaceId": "00000000-0000-0000-0000-000000000001",
+  "chatHistoryId": "00000000-0000-0000-0000-000000000001",
+  "llmModel": "gpt-4-turbo"
+}
+
+### 4. Query with GPT-4.1 Mini
+POST {{baseUrl}}/api/llm/query
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "query": "What are the key findings?",
+  "selectedPdfIds": ["00000000-0000-0000-0000-000000000001"],
+  "workspaceId": "00000000-0000-0000-0000-000000000001",
+  "chatHistoryId": "00000000-0000-0000-0000-000000000001",
+  "llmModel": "gpt-4.1-mini"
+}
+
+### 5. Query with Local LLaMA-3
+POST {{baseUrl}}/api/llm/query
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "query": "Explain the methodology used.",
+  "selectedPdfIds": ["00000000-0000-0000-0000-000000000001"],
+  "workspaceId": "00000000-0000-0000-0000-000000000001",
+  "chatHistoryId": "00000000-0000-0000-0000-000000000001",
+  "llmModel": "local-llama-3"
+}
+
+### 6. Invalid Request - Empty Query
+POST {{baseUrl}}/api/llm/query
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "query": "",
+  "selectedPdfIds": ["00000000-0000-0000-0000-000000000001"],
+  "workspaceId": "00000000-0000-0000-0000-000000000001",
+  "chatHistoryId": "00000000-0000-0000-0000-000000000001",
+  "llmModel": "gpt-4o-mini"
+}
+
+### 7. Invalid Request - No PDFs Selected
+POST {{baseUrl}}/api/llm/query
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "query": "What is this about?",
+  "selectedPdfIds": [],
+  "workspaceId": "00000000-0000-0000-0000-000000000001",
+  "chatHistoryId": "00000000-0000-0000-0000-000000000001",
+  "llmModel": "gpt-4o-mini"
+}
+
+### 8. Invalid Request - Missing LLM Model
+POST {{baseUrl}}/api/llm/query
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "query": "What is this about?",
+  "selectedPdfIds": ["00000000-0000-0000-0000-000000000001"],
+  "workspaceId": "00000000-0000-0000-0000-000000000001",
+  "chatHistoryId": "00000000-0000-0000-0000-000000000001",
+  "llmModel": ""
+}
