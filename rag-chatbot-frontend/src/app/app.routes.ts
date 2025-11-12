@@ -18,6 +18,11 @@ export const routes: Routes = [
     canActivate: [authGuard],
   },
   {
+    path: 'workspace',
+    redirectTo: 'workspaces',
+    pathMatch: 'full',
+  },
+  {
     path: 'chat',
     loadChildren: () => import('./features/chat/chat.module').then((m) => m.ChatModule),
     canActivate: [authGuard],

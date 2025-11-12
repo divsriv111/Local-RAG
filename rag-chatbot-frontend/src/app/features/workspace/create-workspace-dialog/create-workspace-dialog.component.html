@@ -1,0 +1,31 @@
+<p-dialog header="Create New Workspace" [(visible)]="visible" [modal]="true" [style]="{ width: '450px' }"
+    [draggable]="false" [resizable]="false" (onHide)="onHide()">
+    <form [formGroup]="workspaceForm" (ngSubmit)="onSubmit()">
+        <div class="form-content">
+            <!-- Workspace Name Input -->
+            <div class="form-field">
+                <label for="workspace-name" class="form-label">Workspace Name <span class="required">*</span></label>
+                <input id="workspace-name" type="text" pInputText formControlName="name"
+                    placeholder="Enter workspace name" class="w-100"
+                    [class.ng-invalid]="hasError('name', 'required') || hasError('name', 'maxlength')"
+                    [class.ng-dirty]="workspaceForm.get('name')?.touched" autofocus />
+                <small *ngIf="getErrorMessage('name')" class="p-error">
+                    {{ getErrorMessage('name') }}
+                </small>
+                <small *ngIf="!getErrorMessage('name')" class="form-hint">
+                    Maximum 100 characters
+                </small>
+            </div>
+        </div>
+
+        <!-- Dialog Footer with Action Buttons -->
+        <ng-template pTemplate="footer">
+            <div class="dialog-footer">
+                <button pButton type="button" label="Cancel" icon="pi pi-times" class="p-button-text p-button-secondary"
+                    (click)="onCancel()" [disabled]="submitting"></button>
+                <button pButton type="submit" label="Create" icon="pi pi-check" class="p-button-primary"
+                    [loading]="submitting" [disabled]="workspaceForm.invalid || submitting"></button>
+            </div>
+        </ng-template>
+    </form>
+</p-dialog>

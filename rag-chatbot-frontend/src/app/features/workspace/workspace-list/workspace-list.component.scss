@@ -1,0 +1,156 @@
+.workspace-list-container {
+  padding: 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+  position: relative;
+  min-height: calc(100vh - 100px);
+}
+
+.header {
+  margin-bottom: 2rem;
+
+  h1 {
+    font-size: 2rem;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 1rem;
+  }
+
+  .search-bar {
+    max-width: 400px;
+
+    ::ng-deep .p-inputtext {
+      width: 100%;
+      padding-left: 2.5rem;
+    }
+  }
+}
+
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 400px;
+}
+
+.workspace-grid {
+  min-height: 400px;
+
+  .workspace-card {
+    cursor: pointer;
+    transition: all 0.3s ease;
+    height: 100%;
+
+    &:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+    }
+
+    ::ng-deep .p-card-header {
+      font-weight: 600;
+      font-size: 1.1rem;
+      color: #2c3e50;
+    }
+
+    ::ng-deep .p-card-subtitle {
+      font-size: 0.875rem;
+      color: #7f8c8d;
+    }
+
+    .card-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 1.5rem 0;
+
+      .workspace-icon {
+        font-size: 3rem;
+        color: #3498db;
+        margin-bottom: 1rem;
+      }
+
+      .workspace-info {
+        color: #95a5a6;
+        font-size: 0.9rem;
+        margin: 0;
+      }
+    }
+  }
+}
+
+.empty-state {
+  text-align: center;
+  padding: 4rem 2rem;
+  color: #95a5a6;
+
+  .empty-icon {
+    font-size: 5rem;
+    margin-bottom: 1.5rem;
+    color: #bdc3c7;
+  }
+
+  h3 {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+    color: #7f8c8d;
+  }
+
+  p {
+    font-size: 1rem;
+    margin: 0.5rem 0;
+  }
+}
+
+.fab-button {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  z-index: 1000;
+  width: 60px;
+  height: 60px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease;
+
+  &:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+  }
+}
+
+// Responsive adjustments
+@media (max-width: 768px) {
+  .workspace-list-container {
+    padding: 1rem;
+  }
+
+  .header {
+    h1 {
+      font-size: 1.5rem;
+    }
+
+    .search-bar {
+      max-width: 100%;
+    }
+  }
+
+  .fab-button {
+    bottom: 1rem;
+    right: 1rem;
+    width: 50px;
+    height: 50px;
+  }
+}
+
+@media (max-width: 576px) {
+  .workspace-grid {
+    .workspace-card {
+      .card-content {
+        padding: 1rem 0;
+
+        .workspace-icon {
+          font-size: 2rem;
+        }
+      }
+    }
+  }
+}

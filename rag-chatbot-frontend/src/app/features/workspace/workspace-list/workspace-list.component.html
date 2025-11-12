@@ -1,0 +1,51 @@
+<div class="workspace-list-container">
+    <!-- Header with search bar -->
+    <div class="header">
+        <h1>My Workspaces</h1>
+        <div class="search-bar">
+            <span class="p-input-icon-left w-100">
+                <i class="pi pi-search"></i>
+                <input type="text" pInputText placeholder="Search workspaces..." [(ngModel)]="searchTerm"
+                    (input)="onSearchChange($event)" class="w-100" />
+            </span>
+        </div>
+    </div>
+
+    <!-- Loading spinner -->
+    <div *ngIf="loading" class="loading-container">
+        <p-progressSpinner></p-progressSpinner>
+    </div>
+
+    <!-- Workspace grid -->
+    <div *ngIf="!loading" class="workspace-grid">
+        <div class="row">
+            <div *ngFor="let workspace of filteredWorkspaces" class="col-12 col-sm-6 col-md-4 col-lg-3 mb-4">
+                <p-card [header]="workspace.name" [subheader]="formatDate(workspace.createdAt)" class="workspace-card"
+                    (click)="onWorkspaceClick(workspace)">
+                    <div class="card-content">
+                        <i class="pi pi-folder workspace-icon"></i>
+                        <p class="workspace-info">Click to open</p>
+                    </div>
+                </p-card>
+            </div>
+        </div>
+
+        <!-- Empty state -->
+        <div *ngIf="filteredWorkspaces.length === 0" class="empty-state">
+            <i class="pi pi-inbox empty-icon"></i>
+            <h3>No workspaces found</h3>
+            <p *ngIf="searchTerm">Try adjusting your search</p>
+            <p *ngIf="!searchTerm">Create your first workspace to get started</p>
+        </div>
+    </div>
+
+    <!-- FAB (Floating Action Button) -->
+    <button pButton type="button" icon="pi pi-plus" class="p-button-rounded p-button-lg fab-button"
+        (click)="showCreateDialog()" pTooltip="Create New Workspace" tooltipPosition="left"></button>
+
+    <!-- Create Workspace Dialog -->
+    <app-create-workspace-dialog [(visible)]="displayCreateDialog" (workspaceCreated)="onWorkspaceCreated()"
+        (dialogClosed)="onDialogClose()"></app-create-workspace-dialog>
+</div>
+
+<p-toast></p-toast>

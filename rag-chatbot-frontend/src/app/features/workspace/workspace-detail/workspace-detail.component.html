@@ -1,0 +1,96 @@
+<div class="workspace-detail-container">
+    <!-- Header -->
+    <div class="workspace-header">
+        <button pButton type="button" icon="pi pi-arrow-left" class="p-button-text p-button-secondary"
+            (click)="goBack()" pTooltip="Back to Workspaces"></button>
+        <h1 *ngIf="workspace">{{ workspace.name }}</h1>
+        <h1 *ngIf="!workspace && loading">Loading...</h1>
+    </div>
+
+    <!-- Loading spinner -->
+    <div *ngIf="loading" class="loading-container">
+        <p-progressSpinner></p-progressSpinner>
+    </div>
+
+    <!-- Three-panel layout -->
+    <div *ngIf="!loading && workspace" class="workspace-content">
+        <p-splitter [style]="{ height: 'calc(100vh - 150px)' }" styleClass="workspace-splitter">
+            <!-- Left Sidebar: Chat History List -->
+            <ng-template pTemplate>
+                <div class="panel-container left-panel">
+                    <div class="panel-header">
+                        <h2>Chat History</h2>
+                    </div>
+                    <div class="panel-content">
+                        <!-- Chat history component will be added here -->
+                        <p class="placeholder-text">
+                            <i class="pi pi-comments"></i>
+                            <span>Chat history will appear here</span>
+                        </p>
+                    </div>
+                </div>
+            </ng-template>
+
+            <!-- Center Panel: Chat Interface -->
+            <ng-template pTemplate>
+                <div class="panel-container center-panel">
+                    <div class="panel-header">
+                        <h2>Chat</h2>
+                    </div>
+                    <div class="panel-content">
+                        <!-- Chat interface component will be added here -->
+                        <p class="placeholder-text">
+                            <i class="pi pi-comment"></i>
+                            <span>Chat interface will appear here</span>
+                        </p>
+                    </div>
+                </div>
+            </ng-template>
+
+            <!-- Right Sidebar: PDF Upload and File List -->
+            <ng-template pTemplate>
+                <div class="panel-container right-panel">
+                    <div class="panel-header">
+                        <h2>Documents</h2>
+                    </div>
+                    <div class="panel-content">
+                        <!-- PDF upload component will be added here -->
+                        <p class="placeholder-text">
+                            <i class="pi pi-file-pdf"></i>
+                            <span>PDF documents will appear here</span>
+                        </p>
+                    </div>
+                </div>
+            </ng-template>
+        </p-splitter>
+    </div>
+
+    <!-- Mobile layout (stacked panels) -->
+    <div *ngIf="!loading && workspace" class="mobile-layout d-lg-none">
+        <!-- Chat History Panel -->
+        <p-panel header="Chat History" [toggleable]="true" [collapsed]="false">
+            <p class="placeholder-text">
+                <i class="pi pi-comments"></i>
+                <span>Chat history will appear here</span>
+            </p>
+        </p-panel>
+
+        <!-- Chat Interface Panel -->
+        <p-panel header="Chat" [toggleable]="true" [collapsed]="false" class="mt-3">
+            <p class="placeholder-text">
+                <i class="pi pi-comment"></i>
+                <span>Chat interface will appear here</span>
+            </p>
+        </p-panel>
+
+        <!-- Documents Panel -->
+        <p-panel header="Documents" [toggleable]="true" [collapsed]="false" class="mt-3">
+            <p class="placeholder-text">
+                <i class="pi pi-file-pdf"></i>
+                <span>PDF documents will appear here</span>
+            </p>
+        </p-panel>
+    </div>
+</div>
+
+<p-toast></p-toast>
