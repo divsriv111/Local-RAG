@@ -25,10 +25,25 @@ public class Repository<T> : IRepository<T> where T : class
         return await _dbSet.ToListAsync(cancellationToken);
     }
 
+    public virtual IQueryable<T> GetAllAsQueryable()
+    {
+        return _dbSet.AsQueryable();
+    }
+
     public virtual async Task<T> AddAsync(T entity, CancellationToken cancellationToken = default)
     {
         await _dbSet.AddAsync(entity, cancellationToken);
         return entity;
+    }
+
+    public virtual void Update(T entity)
+    {
+        _dbSet.Update(entity);
+    }
+
+    public virtual void Delete(T entity)
+    {
+        _dbSet.Remove(entity);
     }
 
     public virtual Task UpdateAsync(T entity, CancellationToken cancellationToken = default)

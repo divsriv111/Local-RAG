@@ -1,0 +1,57 @@
+### Chat History Management API Tests
+
+@baseUrl = http://localhost:5000/api
+@token = YOUR_JWT_TOKEN_HERE
+@workspaceId = YOUR_WORKSPACE_ID_HERE
+@chatId = YOUR_CHAT_ID_HERE
+
+### 1. Create new chat history
+POST {{baseUrl}}/workspaces/{{workspaceId}}/chats
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+### 2. Get all chat histories for workspace (non-archived)
+GET {{baseUrl}}/workspaces/{{workspaceId}}/chats
+Authorization: Bearer {{token}}
+
+### 3. Get all chat histories including archived
+GET {{baseUrl}}/workspaces/{{workspaceId}}/chats?includeArchived=true
+Authorization: Bearer {{token}}
+
+### 4. Get messages for a chat (first page, 50 items)
+GET {{baseUrl}}/chats/{{chatId}}/messages
+Authorization: Bearer {{token}}
+
+### 5. Get messages with pagination
+GET {{baseUrl}}/chats/{{chatId}}/messages?pageNumber=1&pageSize=20
+Authorization: Bearer {{token}}
+
+### 6. Add new user message
+POST {{baseUrl}}/chats/{{chatId}}/messages
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "content": "What is the main topic of this document?",
+  "isUserMessage": true,
+  "references": null
+}
+
+### 7. Add new assistant message with references
+POST {{baseUrl}}/chats/{{chatId}}/messages
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "content": "Based on the document, the main topic is...",
+  "isUserMessage": false,
+  "references": "[{\"pdf\": \"document.pdf\", \"page\": 5}, {\"pdf\": \"document.pdf\", \"page\": 7}]"
+}
+
+### 8. Archive a chat
+PUT {{baseUrl}}/chats/{{chatId}}/archive
+Authorization: Bearer {{token}}
+
+### 9. Delete a chat history
+DELETE {{baseUrl}}/chats/{{chatId}}
+Authorization: Bearer {{token}}

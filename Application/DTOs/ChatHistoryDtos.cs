@@ -22,3 +22,12 @@ public record UpdateChatHistoryDto
     public string? Name { get; init; }
     public bool? IsArchived { get; init; }
 }
+
+public record ChatHistoryListItemDto
+{
+    public Guid Id { get; init; }
+    public string Name { get; init; } = string.Empty;
+    public DateTime CreatedAt { get; init; }
+    public bool IsArchived { get; init; }
+    public int MessageCount { get; init; }
+}
