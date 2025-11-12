@@ -7,13 +7,16 @@ This document describes the structured logging implementation in the RAG Chatbot
 ## Features Implemented
 
 ### 1. Logging Infrastructure
+
 - **Serilog** as the logging framework
 - **Elasticsearch** as the log aggregation backend
 - **Console** output for local development
 - **File sink** for Elasticsearch failure backup
 
 ### 2. Log Enrichment
+
 All logs are automatically enriched with:
+
 - **Machine Name**: Identifies which server generated the log
 - **Thread ID**: Useful for debugging multi-threaded operations
 - **Environment Name**: Development, Staging, Production
@@ -21,13 +24,16 @@ All logs are automatically enriched with:
 - **Timestamp**: UTC timestamp for all log entries
 
 ### 3. Correlation ID Tracking
+
 - Automatically generates a unique `Guid` for each request
 - Included in response headers as `X-Correlation-ID`
 - Propagates through the entire request pipeline
 - Can be passed to external services (Python LLM service) for distributed tracing
 
 ### 4. Request Logging
+
 All HTTP requests are logged with:
+
 - HTTP Method (GET, POST, PUT, DELETE, etc.)
 - Request Path
 - Status Code
@@ -42,28 +48,34 @@ All HTTP requests are logged with:
 The `IApplicationLoggingService` provides structured logging for:
 
 #### Authentication Events
+
 - `LogAuthenticationAttempt(username, success, errorMessage)`
 - `LogUserRegistration(username, email, success, errorMessage)`
 
 #### Workspace Operations
+
 - `LogWorkspaceCreated(workspaceId, workspaceName, userId)`
 - `LogWorkspaceUpdated(workspaceId, oldName, newName, userId)`
 - `LogWorkspaceDeleted(workspaceId, workspaceName, userId)`
 
 #### PDF Upload Events
+
 - `LogPdfUploadStarted(workspaceId, fileName, fileSize, userId)`
 - `LogPdfUploadCompleted(pdfId, workspaceId, fileName, fileSize, duration, success, errorMessage)`
 
 #### LLM Query Events
+
 - `LogLlmQueryStarted(chatHistoryId, model, queryLength, workspaceId, selectedPdfIds)`
 - `LogLlmQueryCompleted(chatHistoryId, model, queryLength, responseLength, responseTime, success, errorMessage)`
 
 #### Chat History Events
+
 - `LogChatHistoryCreated(chatHistoryId, workspaceId, chatName, userId)`
 - `LogChatHistoryDeleted(chatHistoryId, chatName, workspaceId, userId)`
 - `LogChatHistoryArchived(chatHistoryId, chatName, isArchived, userId)`
 
 #### Exception Logging
+
 - `LogException(exception, context, additionalData)`
   - Captures exception type, message, and stack trace
   - Supports additional contextual data
@@ -111,11 +123,13 @@ Elasticsearch__IndexPrefix=prod-rag-chatbot-logs
 ## Elasticsearch Index Structure
 
 ### Index Naming Pattern
+
 - Format: `{IndexPrefix}-yyyy.MM.dd`
 - Example: `rag-chatbot-logs-2025.11.11`
 - Daily rotation for better performance and easier retention management
 
 ### Index Settings
+
 - **Shards**: 2
 - **Replicas**: 1
 - **Auto-register template**: Enabled
@@ -123,12 +137,12 @@ Elasticsearch__IndexPrefix=prod-rag-chatbot-logs
 
 ## Log Levels
 
-| Level | Usage |
-|-------|-------|
-| **Information** | Normal application flow (successful operations) |
-| **Warning** | Unexpected but handled situations (authentication failures) |
-| **Error** | Errors and exceptions that need attention |
-| **Fatal** | Critical failures that cause application shutdown |
+| Level           | Usage                                                       |
+| --------------- | ----------------------------------------------------------- |
+| **Information** | Normal application flow (successful operations)             |
+| **Warning**     | Unexpected but handled situations (authentication failures) |
+| **Error**       | Errors and exceptions that need attention                   |
+| **Fatal**       | Critical failures that cause application shutdown           |
 
 ## Usage Examples
 
@@ -150,7 +164,7 @@ public class AuthController : ControllerBase
         try
         {
             var result = await _authService.LoginAsync(loginDto);
-            
+
             if (result.Success)
             {
                 _loggingService.LogAuthenticationAttempt(loginDto.Username, true);
@@ -185,13 +199,13 @@ try
 {
     var pdfId = await _pdfService.UploadAsync(file, workspaceId);
     var duration = DateTime.UtcNow - startTime;
-    
+
     _loggingService.LogPdfUploadCompleted(
-        pdfId, 
-        workspaceId, 
-        file.FileName, 
-        file.Length, 
-        duration, 
+        pdfId,
+        workspaceId,
+        file.FileName,
+        file.Length,
+        duration,
         success: true
     );
 }
@@ -199,12 +213,12 @@ catch (Exception ex)
 {
     var duration = DateTime.UtcNow - startTime;
     _loggingService.LogPdfUploadCompleted(
-        Guid.Empty, 
-        workspaceId, 
-        file.FileName, 
-        file.Length, 
-        duration, 
-        success: false, 
+        Guid.Empty,
+        workspaceId,
+        file.FileName,
+        file.Length,
+        duration,
+        success: false,
         errorMessage: ex.Message
     );
     throw;
@@ -216,10 +230,10 @@ catch (Exception ex)
 ```csharp
 var startTime = DateTime.UtcNow;
 _loggingService.LogLlmQueryStarted(
-    chatHistoryId, 
-    model, 
-    query.Length, 
-    workspaceId, 
+    chatHistoryId,
+    model,
+    query.Length,
+    workspaceId,
     selectedPdfIds
 );
 
@@ -227,7 +241,7 @@ try
 {
     var response = await _llmService.QueryAsync(query, model, selectedPdfIds);
     var responseTime = DateTime.UtcNow - startTime;
-    
+
     _loggingService.LogLlmQueryCompleted(
         chatHistoryId,
         model,
@@ -260,6 +274,7 @@ catch (Exception ex)
 1. **Access Kibana**: http://localhost:5601 (or your production URL)
 
 2. **Create Index Pattern**:
+
    - Go to Management → Stack Management → Index Patterns
    - Click "Create index pattern"
    - Index pattern name: `rag-chatbot-logs-*`
@@ -271,19 +286,19 @@ catch (Exception ex)
    ```
    # All authentication failures
    MessageTemplate: "Authentication failed*"
-   
+
    # All errors in the last hour
    Level: "Error" AND @timestamp > now-1h
-   
+
    # Specific correlation ID
    CorrelationId: "YOUR-CORRELATION-ID-HERE"
-   
+
    # PDF uploads over 10MB
    FileSize > 10485760
-   
+
    # LLM queries taking over 5 seconds
    ResponseTime > 5000
-   
+
    # All requests from a specific user
    UserId: "USER-GUID-HERE"
    ```
@@ -299,6 +314,7 @@ catch (Exception ex)
 **Default Retention**: 30 days (configured in `appsettings.json`)
 
 #### Manual Cleanup
+
 ```bash
 # Delete indices older than 30 days
 curl -X DELETE "localhost:9200/rag-chatbot-logs-*" \
@@ -307,9 +323,11 @@ curl -X DELETE "localhost:9200/rag-chatbot-logs-*" \
 ```
 
 #### Automatic Cleanup (Elasticsearch ILM)
+
 Set up Index Lifecycle Management in Elasticsearch:
 
 1. Create ILM policy:
+
 ```json
 PUT _ilm/policy/rag-chatbot-logs-policy
 {
@@ -344,8 +362,9 @@ PUT _ilm/policy/rag-chatbot-logs-policy
 ### Health Check Endpoint
 
 Add to your API:
+
 ```csharp
-app.MapGet("/health/logs", () => 
+app.MapGet("/health/logs", () =>
 {
     // Check if Elasticsearch is reachable
     // Return health status
@@ -357,6 +376,7 @@ app.MapGet("/health/logs", () =>
 ### Passing Correlation ID to Python Service
 
 In `LlmService.cs`:
+
 ```csharp
 var correlationId = _httpContextAccessor.HttpContext?.Items["X-Correlation-ID"]?.ToString();
 
@@ -365,6 +385,7 @@ request.Headers.Add("X-Correlation-ID", correlationId);
 ```
 
 In Python service, add the same header to logs:
+
 ```python
 correlation_id = request.headers.get("X-Correlation-ID")
 logger.info("Processing query", extra={"correlation_id": correlation_id})
@@ -375,6 +396,7 @@ logger.info("Processing query", extra={"correlation_id": correlation_id})
 ### Logs Not Appearing in Elasticsearch
 
 1. Check Elasticsearch is running:
+
    ```bash
    curl http://localhost:9200/_cluster/health
    ```
@@ -395,6 +417,7 @@ logger.info("Processing query", extra={"correlation_id": correlation_id})
 ### Missing Correlation IDs
 
 Ensure `CorrelationIdMiddleware` is registered **before** other middleware:
+
 ```csharp
 app.UseCorrelationId(); // Must be early in pipeline
 app.UseSerilogRequestLogging();
@@ -420,10 +443,11 @@ app.UseSerilogRequestLogging();
 ## Best Practices
 
 1. **Use structured logging**: Always use Serilog's structured syntax
+
    ```csharp
    // Good
    _logger.LogInformation("User {UserId} uploaded {FileName}", userId, fileName);
-   
+
    // Bad
    _logger.LogInformation($"User {userId} uploaded {fileName}");
    ```

@@ -39,8 +39,8 @@ public class CorrelationIdMiddleware
         // Add to Serilog log context
         using (Serilog.Context.LogContext.PushProperty("CorrelationId", correlationId))
         {
-            _logger.LogInformation("Request started: {Method} {Path}", 
-                context.Request.Method, 
+            _logger.LogInformation("Request started: {Method} {Path}",
+                context.Request.Method,
                 context.Request.Path);
 
             try
@@ -49,8 +49,8 @@ public class CorrelationIdMiddleware
             }
             finally
             {
-                _logger.LogInformation("Request completed: {Method} {Path} - Status: {StatusCode}", 
-                    context.Request.Method, 
+                _logger.LogInformation("Request completed: {Method} {Path} - Status: {StatusCode}",
+                    context.Request.Method,
                     context.Request.Path,
                     context.Response.StatusCode);
             }

@@ -43,7 +43,7 @@ Log.Logger = new LoggerConfiguration()
         NumberOfReplicas = 1,
         MinimumLogEventLevel = LogEventLevel.Information,
         EmitEventFailure = EmitEventFailureHandling.WriteToSelfLog,
-        ModifyConnectionSettings = x => 
+        ModifyConnectionSettings = x =>
         {
             if (!string.IsNullOrEmpty(elasticsearchUsername) && !string.IsNullOrEmpty(elasticsearchPassword))
             {
@@ -52,7 +52,7 @@ Log.Logger = new LoggerConfiguration()
             return x;
         }
     })
-    .WriteTo.File("./logs/elasticsearch-failures-.txt", 
+    .WriteTo.File("./logs/elasticsearch-failures-.txt",
         rollingInterval: RollingInterval.Day,
         restrictedToMinimumLevel: LogEventLevel.Error)
     .CreateLogger();
@@ -62,30 +62,30 @@ try
     Log.Information("Starting RAG Chatbot API...");
     Log.Information("Elasticsearch logging configured: {ElasticsearchUri}, Index: {IndexPrefix}", elasticsearchUri, indexPrefix);
 
-var builder = WebApplication.CreateBuilder(args);
+    var builder = WebApplication.CreateBuilder(args);
 
-// Configure Serilog with the application
-builder.Host.UseSerilog();
+    // Configure Serilog with the application
+    builder.Host.UseSerilog();
 
-// Add services to the container
-builder.Services.AddControllers();
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(c =>
-{
-    c.SwaggerDoc("v1", new OpenApiInfo { Title = "RAG Chatbot API", Version = "v1" });
-
-    // Add JWT Authentication to Swagger
-    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    // Add services to the container
+    builder.Services.AddControllers();
+    builder.Services.AddEndpointsApiExplorer();
+    builder.Services.AddSwaggerGen(c =>
     {
-        Description = "JWT Authorization header using the Bearer scheme. Enter 'Bearer' [space] and then your token in the text input below.",
-        Name = "Authorization",
-        In = ParameterLocation.Header,
-        Type = SecuritySchemeType.ApiKey,
-        Scheme = "Bearer"
-    });
+        c.SwaggerDoc("v1", new OpenApiInfo { Title = "RAG Chatbot API", Version = "v1" });
 
-    c.AddSecurityRequirement(new OpenApiSecurityRequirement
-    {
+        // Add JWT Authentication to Swagger
+        c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+        {
+            Description = "JWT Authorization header using the Bearer scheme. Enter 'Bearer' [space] and then your token in the text input below.",
+            Name = "Authorization",
+            In = ParameterLocation.Header,
+            Type = SecuritySchemeType.ApiKey,
+            Scheme = "Bearer"
+        });
+
+        c.AddSecurityRequirement(new OpenApiSecurityRequirement
+        {
         {
             new OpenApiSecurityScheme
             {
@@ -97,100 +97,100 @@ builder.Services.AddSwaggerGen(c =>
             },
             Array.Empty<string>()
         }
+        });
     });
-});
 
-// Add CORS
-builder.Services.AddCors(options =>
-{
-    options.AddDefaultPolicy(policy =>
+    // Add CORS
+    builder.Services.AddCors(options =>
     {
-        policy.AllowAnyOrigin()
-              .AllowAnyMethod()
-              .AllowAnyHeader();
+        options.AddDefaultPolicy(policy =>
+        {
+            policy.AllowAnyOrigin()
+                  .AllowAnyMethod()
+                  .AllowAnyHeader();
+        });
     });
-});
 
-// Add JWT Authentication
-var jwtSettings = builder.Configuration.GetSection("JwtSettings");
-var secretKey = jwtSettings["SecretKey"] ?? throw new InvalidOperationException("JWT Secret Key is not configured.");
+    // Add JWT Authentication
+    var jwtSettings = builder.Configuration.GetSection("JwtSettings");
+    var secretKey = jwtSettings["SecretKey"] ?? throw new InvalidOperationException("JWT Secret Key is not configured.");
 
-builder.Services.AddAuthentication(options =>
-{
-    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-})
-.AddJwtBearer(options =>
-{
-    options.TokenValidationParameters = new TokenValidationParameters
+    builder.Services.AddAuthentication(options =>
     {
-        ValidateIssuer = true,
-        ValidateAudience = true,
-        ValidateLifetime = true,
-        ValidateIssuerSigningKey = true,
-        ValidIssuer = jwtSettings["Issuer"],
-        ValidAudience = jwtSettings["Audience"],
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey)),
-        ClockSkew = TimeSpan.Zero
-    };
-});
-
-builder.Services.AddAuthorization();
-
-// Add Application and Infrastructure layers
-builder.Services.AddApplication();
-builder.Services.AddInfrastructure(builder.Configuration);
-
-var app = builder.Build();
-
-// Configure the HTTP request pipeline
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
-
-app.UseHttpsRedirection();
-
-// Add Serilog request logging
-app.UseSerilogRequestLogging(options =>
-{
-    options.MessageTemplate = "HTTP {RequestMethod} {RequestPath} responded {StatusCode} in {Elapsed:0.0000} ms";
-    options.EnrichDiagnosticContext = (diagnosticContext, httpContext) =>
+        options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+        options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    })
+    .AddJwtBearer(options =>
     {
-        diagnosticContext.Set("RequestHost", httpContext.Request.Host.Value ?? "unknown");
-        diagnosticContext.Set("RequestScheme", httpContext.Request.Scheme);
-        
-        if (httpContext.Connection.RemoteIpAddress != null)
+        options.TokenValidationParameters = new TokenValidationParameters
         {
-            diagnosticContext.Set("RemoteIpAddress", httpContext.Connection.RemoteIpAddress.ToString());
-        }
-        
-        diagnosticContext.Set("UserAgent", httpContext.Request.Headers["User-Agent"].ToString());
-        
-        // Include correlation ID in request logs
-        if (httpContext.Items.TryGetValue("X-Correlation-ID", out var correlationId))
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = jwtSettings["Issuer"],
+            ValidAudience = jwtSettings["Audience"],
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey)),
+            ClockSkew = TimeSpan.Zero
+        };
+    });
+
+    builder.Services.AddAuthorization();
+
+    // Add Application and Infrastructure layers
+    builder.Services.AddApplication();
+    builder.Services.AddInfrastructure(builder.Configuration);
+
+    var app = builder.Build();
+
+    // Configure the HTTP request pipeline
+    if (app.Environment.IsDevelopment())
+    {
+        app.UseSwagger();
+        app.UseSwaggerUI();
+    }
+
+    app.UseHttpsRedirection();
+
+    // Add Serilog request logging
+    app.UseSerilogRequestLogging(options =>
+    {
+        options.MessageTemplate = "HTTP {RequestMethod} {RequestPath} responded {StatusCode} in {Elapsed:0.0000} ms";
+        options.EnrichDiagnosticContext = (diagnosticContext, httpContext) =>
         {
-            var correlationIdValue = correlationId?.ToString();
-            if (!string.IsNullOrEmpty(correlationIdValue))
+            diagnosticContext.Set("RequestHost", httpContext.Request.Host.Value ?? "unknown");
+            diagnosticContext.Set("RequestScheme", httpContext.Request.Scheme);
+
+            if (httpContext.Connection.RemoteIpAddress != null)
             {
-                diagnosticContext.Set("CorrelationId", correlationIdValue);
+                diagnosticContext.Set("RemoteIpAddress", httpContext.Connection.RemoteIpAddress.ToString());
             }
-        }
-    };
-});
 
-// Add correlation ID middleware before other middleware
-app.UseCorrelationId();
+            diagnosticContext.Set("UserAgent", httpContext.Request.Headers["User-Agent"].ToString());
 
-app.UseCors();
+            // Include correlation ID in request logs
+            if (httpContext.Items.TryGetValue("X-Correlation-ID", out var correlationId))
+            {
+                var correlationIdValue = correlationId?.ToString();
+                if (!string.IsNullOrEmpty(correlationIdValue))
+                {
+                    diagnosticContext.Set("CorrelationId", correlationIdValue);
+                }
+            }
+        };
+    });
 
-app.UseAuthentication();
-app.UseAuthorization();
+    // Add correlation ID middleware before other middleware
+    app.UseCorrelationId();
 
-app.MapControllers();
+    app.UseCors();
 
-app.Run();
+    app.UseAuthentication();
+    app.UseAuthorization();
+
+    app.MapControllers();
+
+    app.Run();
 }
 catch (Exception ex)
 {

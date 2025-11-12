@@ -36,13 +36,13 @@ public class AuthController : ControllerBase
         try
         {
             var result = await _authService.RegisterAsync(dto);
-            
+
             _loggingService.LogUserRegistration(
                 dto.Username,
                 dto.Email,
                 success: true
             );
-            
+
             return CreatedAtAction(nameof(Register), new { id = result.UserId }, result);
         }
         catch (Exception ex)
@@ -53,7 +53,7 @@ public class AuthController : ControllerBase
                 success: false,
                 errorMessage: ex.Message
             );
-            
+
             return BadRequest(new { error = ex.Message });
         }
     }
@@ -64,7 +64,7 @@ public class AuthController : ControllerBase
         try
         {
             var result = await _authService.LoginAsync(dto);
-            
+
             if (result.Success)
             {
                 _loggingService.LogAuthenticationAttempt(dto.Username, success: true);
@@ -87,7 +87,7 @@ public class AuthController : ControllerBase
                 { "Username", dto.Username },
                 { "IPAddress", HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown" }
             });
-            
+
             return StatusCode(500, new { error = "An error occurred during login" });
         }
     }
@@ -136,13 +136,13 @@ public class WorkspacesController : ControllerBase
         {
             var userId = GetCurrentUserId();
             var workspace = await _workspaceService.CreateAsync(dto, userId);
-            
+
             _loggingService.LogWorkspaceCreated(
                 workspace.Id,
                 workspace.Name,
                 userId
             );
-            
+
             return CreatedAtAction(nameof(GetWorkspace), new { id = workspace.Id }, workspace);
         }
         catch (Exception ex)
@@ -152,7 +152,7 @@ public class WorkspacesController : ControllerBase
                 { "WorkspaceName", dto.Name },
                 { "UserId", GetCurrentUserId() }
             });
-            
+
             return StatusCode(500, new { error = "Failed to create workspace" });
         }
     }
@@ -161,12 +161,12 @@ public class WorkspacesController : ControllerBase
     public async Task<IActionResult> GetWorkspace(Guid id)
     {
         var workspace = await _workspaceService.GetByIdAsync(id);
-        
+
         if (workspace == null)
         {
             return NotFound();
         }
-        
+
         return Ok(workspace);
     }
 
@@ -177,21 +177,21 @@ public class WorkspacesController : ControllerBase
         {
             var userId = GetCurrentUserId();
             var oldWorkspace = await _workspaceService.GetByIdAsync(id);
-            
+
             if (oldWorkspace == null)
             {
                 return NotFound();
             }
-            
+
             var updatedWorkspace = await _workspaceService.UpdateAsync(id, dto, userId);
-            
+
             _loggingService.LogWorkspaceUpdated(
                 id,
                 oldWorkspace.Name,
                 dto.Name,
                 userId
             );
-            
+
             return Ok(updatedWorkspace);
         }
         catch (Exception ex)
@@ -201,7 +201,7 @@ public class WorkspacesController : ControllerBase
                 { "WorkspaceId", id },
                 { "UserId", GetCurrentUserId() }
             });
-            
+
             return StatusCode(500, new { error = "Failed to update workspace" });
         }
     }
@@ -213,20 +213,20 @@ public class WorkspacesController : ControllerBase
         {
             var userId = GetCurrentUserId();
             var workspace = await _workspaceService.GetByIdAsync(id);
-            
+
             if (workspace == null)
             {
                 return NotFound();
             }
-            
+
             await _workspaceService.DeleteAsync(id, userId);
-            
+
             _loggingService.LogWorkspaceDeleted(
                 id,
                 workspace.Name,
                 userId
             );
-            
+
             return NoContent();
         }
         catch (Exception ex)
@@ -236,7 +236,7 @@ public class WorkspacesController : ControllerBase
                 { "WorkspaceId", id },
                 { "UserId", GetCurrentUserId() }
             });
-            
+
             return StatusCode(500, new { error = "Failed to delete workspace" });
         }
     }
@@ -285,7 +285,7 @@ public class PDFsController : ControllerBase
     {
         var stopwatch = Stopwatch.StartNew();
         var userId = GetCurrentUserId();
-        
+
         try
         {
             if (file == null || file.Length == 0)
@@ -302,7 +302,7 @@ public class PDFsController : ControllerBase
 
             var pdfId = await _pdfService.UploadAsync(file, workspaceId, userId);
             stopwatch.Stop();
-            
+
             _loggingService.LogPdfUploadCompleted(
                 pdfId,
                 workspaceId,
@@ -312,9 +312,9 @@ public class PDFsController : ControllerBase
                 success: true
             );
 
-            return Ok(new 
-            { 
-                id = pdfId, 
+            return Ok(new
+            {
+                id = pdfId,
                 fileName = file.FileName,
                 size = file.Length,
                 uploadDuration = stopwatch.ElapsedMilliseconds
@@ -323,7 +323,7 @@ public class PDFsController : ControllerBase
         catch (Exception ex)
         {
             stopwatch.Stop();
-            
+
             _loggingService.LogPdfUploadCompleted(
                 Guid.Empty,
                 workspaceId,
@@ -333,7 +333,7 @@ public class PDFsController : ControllerBase
                 success: false,
                 errorMessage: ex.Message
             );
-            
+
             _loggingService.LogException(ex, "PDF Upload", new Dictionary<string, object>
             {
                 { "WorkspaceId", workspaceId },
@@ -382,7 +382,7 @@ public class LlmController : ControllerBase
     public async Task<IActionResult> Query([FromBody] LlmQueryDto dto)
     {
         var stopwatch = Stopwatch.StartNew();
-        
+
         try
         {
             _loggingService.LogLlmQueryStarted(
@@ -395,7 +395,7 @@ public class LlmController : ControllerBase
 
             var response = await _llmService.QueryAsync(dto);
             stopwatch.Stop();
-            
+
             _loggingService.LogLlmQueryCompleted(
                 dto.ChatHistoryId,
                 dto.Model,
@@ -410,7 +410,7 @@ public class LlmController : ControllerBase
         catch (Exception ex)
         {
             stopwatch.Stop();
-            
+
             _loggingService.LogLlmQueryCompleted(
                 dto.ChatHistoryId,
                 dto.Model,
@@ -420,7 +420,7 @@ public class LlmController : ControllerBase
                 success: false,
                 errorMessage: ex.Message
             );
-            
+
             _loggingService.LogException(ex, "LLM Query", new Dictionary<string, object>
             {
                 { "ChatHistoryId", dto.ChatHistoryId },
@@ -478,14 +478,14 @@ public class ChatHistoriesController : ControllerBase
         {
             var userId = GetCurrentUserId();
             var chat = await _chatService.CreateAsync(dto, userId);
-            
+
             _loggingService.LogChatHistoryCreated(
                 chat.Id,
                 dto.WorkspaceId,
                 chat.Name,
                 userId
             );
-            
+
             return CreatedAtAction(nameof(GetChat), new { id = chat.Id }, chat);
         }
         catch (Exception ex)
@@ -495,7 +495,7 @@ public class ChatHistoriesController : ControllerBase
                 { "WorkspaceId", dto.WorkspaceId },
                 { "UserId", GetCurrentUserId() }
             });
-            
+
             return StatusCode(500, new { error = "Failed to create chat" });
         }
     }
@@ -504,12 +504,12 @@ public class ChatHistoriesController : ControllerBase
     public async Task<IActionResult> GetChat(Guid id)
     {
         var chat = await _chatService.GetByIdAsync(id);
-        
+
         if (chat == null)
         {
             return NotFound();
         }
-        
+
         return Ok(chat);
     }
 
@@ -520,21 +520,21 @@ public class ChatHistoriesController : ControllerBase
         {
             var userId = GetCurrentUserId();
             var chat = await _chatService.GetByIdAsync(id);
-            
+
             if (chat == null)
             {
                 return NotFound();
             }
-            
+
             await _chatService.ArchiveAsync(id);
-            
+
             _loggingService.LogChatHistoryArchived(
                 id,
                 chat.Name,
                 isArchived: true,
                 userId
             );
-            
+
             return Ok();
         }
         catch (Exception ex)
@@ -544,7 +544,7 @@ public class ChatHistoriesController : ControllerBase
                 { "ChatId", id },
                 { "UserId", GetCurrentUserId() }
             });
-            
+
             return StatusCode(500, new { error = "Failed to archive chat" });
         }
     }
@@ -556,21 +556,21 @@ public class ChatHistoriesController : ControllerBase
         {
             var userId = GetCurrentUserId();
             var chat = await _chatService.GetByIdAsync(id);
-            
+
             if (chat == null)
             {
                 return NotFound();
             }
-            
+
             await _chatService.DeleteAsync(id);
-            
+
             _loggingService.LogChatHistoryDeleted(
                 id,
                 chat.Name,
                 chat.WorkspaceId,
                 userId
             );
-            
+
             return NoContent();
         }
         catch (Exception ex)
@@ -580,7 +580,7 @@ public class ChatHistoriesController : ControllerBase
                 { "ChatId", id },
                 { "UserId", GetCurrentUserId() }
             });
-            
+
             return StatusCode(500, new { error = "Failed to delete chat" });
         }
     }
@@ -592,6 +592,7 @@ public class ChatHistoriesController : ControllerBase
 ## Key Patterns
 
 ### 1. Always Log Success and Failure
+
 ```csharp
 if (success)
 {
@@ -604,6 +605,7 @@ else
 ```
 
 ### 2. Use Stopwatch for Duration Tracking
+
 ```csharp
 var stopwatch = Stopwatch.StartNew();
 // ... perform operation
@@ -612,6 +614,7 @@ _loggingService.LogOperationCompleted(..., stopwatch.Elapsed);
 ```
 
 ### 3. Include Context in Exception Logs
+
 ```csharp
 _loggingService.LogException(ex, "Operation name", new Dictionary<string, object>
 {
@@ -621,6 +624,7 @@ _loggingService.LogException(ex, "Operation name", new Dictionary<string, object
 ```
 
 ### 4. Log at the Controller Level
+
 - Controllers are the entry points
 - Easy to add correlation IDs and user context
 - Centralized error handling
@@ -630,9 +634,11 @@ _loggingService.LogException(ex, "Operation name", new Dictionary<string, object
 ## Testing Your Logs
 
 ### 1. Check Console Output
+
 Run your API and perform operations. You should see structured logs in the console.
 
 ### 2. Query Elasticsearch
+
 ```bash
 # Get recent logs
 curl "http://localhost:9200/rag-chatbot-logs-*/_search?pretty" \
@@ -641,6 +647,7 @@ curl "http://localhost:9200/rag-chatbot-logs-*/_search?pretty" \
 ```
 
 ### 3. View in Kibana
+
 - Navigate to Discover
 - Select `rag-chatbot-logs-*` index
 - Filter by log level, operation type, user, etc.

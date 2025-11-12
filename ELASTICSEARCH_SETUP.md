@@ -52,6 +52,7 @@ curl -X PUT "localhost:9200/_ilm/policy/rag-chatbot-logs-policy?pretty" \
 ```
 
 ### Policy Explanation:
+
 - **Hot Phase (0-7 days)**: Active logs, high priority, rollover daily or at 50GB
 - **Warm Phase (7-30 days)**: Older logs, optimized for storage
 - **Delete Phase (30+ days)**: Automatically delete old logs
@@ -186,21 +187,25 @@ curl -X PUT "localhost:9200/_index_template/rag-chatbot-logs-template?pretty" \
 ## 3. Verify Configuration
 
 ### Check ILM Policy
+
 ```bash
 curl -X GET "localhost:9200/_ilm/policy/rag-chatbot-logs-policy?pretty"
 ```
 
 ### Check Index Template
+
 ```bash
 curl -X GET "localhost:9200/_index_template/rag-chatbot-logs-template?pretty"
 ```
 
 ### Check Indices
+
 ```bash
 curl -X GET "localhost:9200/_cat/indices/rag-chatbot-logs-*?v&s=index"
 ```
 
 ### Check ILM Status for Indices
+
 ```bash
 curl -X GET "localhost:9200/rag-chatbot-logs-*/_ilm/explain?pretty"
 ```
@@ -210,17 +215,20 @@ curl -X GET "localhost:9200/rag-chatbot-logs-*/_ilm/explain?pretty"
 ## 4. Manual Operations
 
 ### Force Rollover (for testing)
+
 ```bash
 curl -X POST "localhost:9200/rag-chatbot-logs/_rollover?pretty"
 ```
 
 ### Delete Old Indices Manually
+
 ```bash
 # Delete indices older than 30 days
 curl -X DELETE "localhost:9200/rag-chatbot-logs-2024.*?pretty"
 ```
 
 ### Reindex to Apply New Mapping
+
 ```bash
 curl -X POST "localhost:9200/_reindex?pretty" \
   -H 'Content-Type: application/json' \
@@ -239,21 +247,25 @@ curl -X POST "localhost:9200/_reindex?pretty" \
 ## 5. Monitoring
 
 ### View ILM Policies
+
 ```bash
 curl -X GET "localhost:9200/_ilm/policy?pretty"
 ```
 
 ### View Index Lifecycle
+
 ```bash
 curl -X GET "localhost:9200/rag-chatbot-logs-*/_settings?pretty" | grep lifecycle
 ```
 
 ### Check Disk Usage
+
 ```bash
 curl -X GET "localhost:9200/_cat/allocation?v"
 ```
 
 ### Monitor ILM Errors
+
 ```bash
 curl -X GET "localhost:9200/_ilm/status?pretty"
 ```
@@ -263,6 +275,7 @@ curl -X GET "localhost:9200/_ilm/status?pretty"
 ## 6. Kibana Setup
 
 ### Create Index Pattern
+
 1. Go to **Stack Management** → **Index Patterns**
 2. Click **Create index pattern**
 3. Index pattern: `rag-chatbot-logs-*`
@@ -272,6 +285,7 @@ curl -X GET "localhost:9200/_ilm/status?pretty"
 ### Create Visualizations
 
 #### 1. Error Rate Over Time
+
 ```json
 {
   "type": "line",
@@ -290,6 +304,7 @@ curl -X GET "localhost:9200/_ilm/status?pretty"
 ```
 
 #### 2. Authentication Failures
+
 ```json
 {
   "type": "pie",
@@ -307,6 +322,7 @@ curl -X GET "localhost:9200/_ilm/status?pretty"
 ```
 
 #### 3. Average LLM Response Time
+
 ```json
 {
   "type": "metric",
@@ -324,6 +340,7 @@ curl -X GET "localhost:9200/_ilm/status?pretty"
 ```
 
 #### 4. PDF Upload Statistics
+
 ```json
 {
   "type": "data_table",
@@ -357,6 +374,7 @@ curl -X GET "localhost:9200/_ilm/status?pretty"
 ## 7. Alerts (Using Elasticsearch Watcher)
 
 ### Alert on High Error Rate
+
 ```bash
 curl -X PUT "localhost:9200/_watcher/watch/high-error-rate?pretty" \
   -H 'Content-Type: application/json' \
@@ -411,6 +429,7 @@ curl -X PUT "localhost:9200/_watcher/watch/high-error-rate?pretty" \
 ```
 
 ### Alert on Failed Authentications
+
 ```bash
 curl -X PUT "localhost:9200/_watcher/watch/failed-auth-attempts?pretty" \
   -H 'Content-Type: application/json' \
@@ -474,12 +493,14 @@ curl -X PUT "localhost:9200/_watcher/watch/failed-auth-attempts?pretty" \
 ## 8. Performance Tuning
 
 ### Increase Heap Size (for large log volumes)
+
 ```yaml
 # In elasticsearch.yml or docker-compose.yml
 ES_JAVA_OPTS: "-Xms2g -Xmx2g"
 ```
 
 ### Optimize Refresh Interval
+
 ```bash
 curl -X PUT "localhost:9200/rag-chatbot-logs-*/_settings?pretty" \
   -H 'Content-Type: application/json' \
@@ -491,6 +512,7 @@ curl -X PUT "localhost:9200/rag-chatbot-logs-*/_settings?pretty" \
 ```
 
 ### Force Merge Old Indices
+
 ```bash
 curl -X POST "localhost:9200/rag-chatbot-logs-2024.10.*/_forcemerge?max_num_segments=1&pretty"
 ```
@@ -500,6 +522,7 @@ curl -X POST "localhost:9200/rag-chatbot-logs-2024.10.*/_forcemerge?max_num_segm
 ## 9. Backup and Restore
 
 ### Create Snapshot Repository
+
 ```bash
 curl -X PUT "localhost:9200/_snapshot/rag_logs_backup?pretty" \
   -H 'Content-Type: application/json' \
@@ -513,6 +536,7 @@ curl -X PUT "localhost:9200/_snapshot/rag_logs_backup?pretty" \
 ```
 
 ### Create Snapshot
+
 ```bash
 curl -X PUT "localhost:9200/_snapshot/rag_logs_backup/snapshot_1?wait_for_completion=true&pretty" \
   -H 'Content-Type: application/json' \
@@ -524,6 +548,7 @@ curl -X PUT "localhost:9200/_snapshot/rag_logs_backup/snapshot_1?wait_for_comple
 ```
 
 ### Restore Snapshot
+
 ```bash
 curl -X POST "localhost:9200/_snapshot/rag_logs_backup/snapshot_1/_restore?pretty" \
   -H 'Content-Type: application/json' \
@@ -539,24 +564,28 @@ curl -X POST "localhost:9200/_snapshot/rag_logs_backup/snapshot_1/_restore?prett
 ## 10. Troubleshooting
 
 ### Logs Not Appearing
+
 1. Check Elasticsearch is running: `curl http://localhost:9200`
 2. Check API logs: `./logs/elasticsearch-failures-*.txt`
 3. Verify Elasticsearch URI in `appsettings.json`
 4. Check network connectivity between API and Elasticsearch
 
 ### High Disk Usage
+
 1. Check index sizes: `curl "localhost:9200/_cat/indices?v&s=store.size:desc"`
 2. Manually delete old indices
 3. Adjust ILM retention policy
 4. Increase disk space or move to separate volume
 
 ### Slow Query Performance
+
 1. Check shard count: `curl "localhost:9200/_cat/shards?v"`
 2. Optimize field mappings (use `keyword` instead of `text` where appropriate)
 3. Add more nodes to cluster
 4. Use index patterns in queries to limit scope
 
 ### ILM Not Working
+
 1. Check ILM status: `curl "localhost:9200/_ilm/status?pretty"`
 2. View ILM explain: `curl "localhost:9200/rag-chatbot-logs-*/_ilm/explain?pretty"`
 3. Restart ILM: `curl -X POST "localhost:9200/_ilm/start?pretty"`

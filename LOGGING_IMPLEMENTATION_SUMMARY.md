@@ -3,6 +3,7 @@
 ## ✅ Completed Tasks
 
 ### 1. NuGet Packages Installed
+
 - ✅ Serilog.AspNetCore (v9.0.0)
 - ✅ Serilog.Sinks.Elasticsearch (v10.0.0)
 - ✅ Serilog.Enrichers.Environment (v3.0.1)
@@ -11,6 +12,7 @@
 ### 2. Core Components Created
 
 #### Middleware
+
 - **File**: `API/Middleware/CorrelationIdMiddleware.cs`
 - **Purpose**: Generates and tracks correlation IDs across requests
 - **Features**:
@@ -20,6 +22,7 @@
   - Integrates with Serilog log context
 
 #### Logging Service Interface
+
 - **File**: `Application/Interfaces/IApplicationLoggingService.cs`
 - **Methods**:
   - `LogAuthenticationAttempt()` - User login/authentication events
@@ -31,6 +34,7 @@
   - `LogException()` - Structured exception logging with context
 
 #### Logging Service Implementation
+
 - **File**: `Infrastructure/Services/ApplicationLoggingService.cs`
 - **Features**:
   - Structured logging with rich context
@@ -41,12 +45,15 @@
 ### 3. Serilog Configuration
 
 #### Program.cs Updates
+
 - **Log Sinks**:
+
   - Console (for development/debugging)
   - Elasticsearch (for production logging and analysis)
   - File (backup for Elasticsearch failures)
 
 - **Enrichers**:
+
   - Machine Name - Identifies the server
   - Thread ID - Thread-level debugging
   - Environment Name - Dev/Staging/Production differentiation
@@ -64,6 +71,7 @@
 ### 4. Configuration Files
 
 #### appsettings.json
+
 ```json
 {
   "Elasticsearch": {
@@ -89,6 +97,7 @@
 ```
 
 #### Elasticsearch Index Configuration
+
 - **Index Pattern**: `rag-chatbot-logs-yyyy.MM.dd`
 - **Daily Rotation**: New index created each day
 - **Retention**: 30 days (configurable)
@@ -98,6 +107,7 @@
 ### 5. Documentation Created
 
 #### LOGGING_GUIDE.md
+
 - Comprehensive overview of logging infrastructure
 - Configuration details and environment variables
 - Usage examples for all logging methods
@@ -108,6 +118,7 @@
 - Best practices
 
 #### LOGGING_EXAMPLES.md
+
 - Real-world controller implementations
 - Authentication, Workspace, PDF, LLM, and Chat examples
 - Stopwatch usage for duration tracking
@@ -115,6 +126,7 @@
 - Testing procedures
 
 #### ELASTICSEARCH_SETUP.md
+
 - ILM (Index Lifecycle Management) configuration
 - Index template with field mappings
 - Kibana visualization examples
@@ -130,16 +142,16 @@
 
 ### Events Being Logged
 
-| Event Type | Success | Failure | Duration | Metadata |
-|------------|---------|---------|----------|----------|
-| Authentication | ✅ | ✅ | - | Username, Timestamp |
-| User Registration | ✅ | ✅ | - | Username, Email |
-| Workspace CRUD | ✅ | ✅ | - | Workspace ID/Name, User ID |
-| PDF Upload | ✅ | ✅ | ✅ | File size, Name, Duration |
-| LLM Query | ✅ | ✅ | ✅ | Model, Query length, Response time |
-| Chat History | ✅ | ✅ | - | Chat ID/Name, Workspace ID |
-| Exceptions | - | ✅ | - | Stack trace, Context, Additional data |
-| HTTP Requests | ✅ | ✅ | ✅ | Method, Path, Status, IP |
+| Event Type        | Success | Failure | Duration | Metadata                              |
+| ----------------- | ------- | ------- | -------- | ------------------------------------- |
+| Authentication    | ✅      | ✅      | -        | Username, Timestamp                   |
+| User Registration | ✅      | ✅      | -        | Username, Email                       |
+| Workspace CRUD    | ✅      | ✅      | -        | Workspace ID/Name, User ID            |
+| PDF Upload        | ✅      | ✅      | ✅       | File size, Name, Duration             |
+| LLM Query         | ✅      | ✅      | ✅       | Model, Query length, Response time    |
+| Chat History      | ✅      | ✅      | -        | Chat ID/Name, Workspace ID            |
+| Exceptions        | -       | ✅      | -        | Stack trace, Context, Additional data |
+| HTTP Requests     | ✅      | ✅      | ✅       | Method, Path, Status, IP              |
 
 ### Enrichment Data (Automatic)
 
@@ -158,18 +170,20 @@
 ### Immediate Actions
 
 1. **Update Controllers**
+
    - Inject `IApplicationLoggingService` into existing controllers
    - Add logging calls for key operations
    - Refer to `LOGGING_EXAMPLES.md` for patterns
 
 2. **Test Logging**
+
    ```bash
    # Start Elasticsearch (if using Docker)
    docker run -d -p 9200:9200 -e "discovery.type=single-node" elasticsearch:8.11.0
-   
+
    # Run the API
    cd API && dotnet run
-   
+
    # Test endpoints and verify logs appear
    ```
 
@@ -181,6 +195,7 @@
 ### Production Deployment
 
 1. **Environment Variables**
+
    ```bash
    Elasticsearch__Uri=http://elasticsearch:9200
    Elasticsearch__Username=elastic
@@ -189,11 +204,13 @@
    ```
 
 2. **Enable Elasticsearch Security**
+
    - Set up authentication
    - Configure TLS/SSL
    - Restrict network access
 
 3. **Set Up Alerts**
+
    - High error rates (> 10 errors/minute)
    - Failed authentication attempts (> 5 per user/5 minutes)
    - Slow LLM queries (> 30 seconds)
@@ -207,6 +224,7 @@
 ### Integration with Python Service
 
 **Pass Correlation ID**:
+
 ```csharp
 // In LlmService.cs
 var correlationId = _httpContextAccessor.HttpContext?.Items["X-Correlation-ID"]?.ToString();
@@ -215,6 +233,7 @@ request.Headers.Add("X-Correlation-ID", correlationId);
 ```
 
 **In Python Service** (add to your FastAPI app):
+
 ```python
 from fastapi import Request
 import logging
@@ -222,14 +241,14 @@ import logging
 @app.middleware("http")
 async def log_requests(request: Request, call_next):
     correlation_id = request.headers.get("X-Correlation-ID")
-    
+
     # Add to logging context
     logger = logging.getLogger(__name__)
     logger.info(
         "Processing request",
         extra={"correlation_id": correlation_id}
     )
-    
+
     response = await call_next(request)
     return response
 ```
@@ -239,6 +258,7 @@ async def log_requests(request: Request, call_next):
 ## 📈 Benefits Achieved
 
 ### Operational Benefits
+
 - ✅ **Distributed Tracing**: Track requests across C# API and Python service
 - ✅ **Performance Monitoring**: Measure response times and identify bottlenecks
 - ✅ **Error Detection**: Quickly identify and diagnose issues
@@ -246,12 +266,14 @@ async def log_requests(request: Request, call_next):
 - ✅ **Compliance**: Audit trail for security and regulatory requirements
 
 ### Developer Benefits
+
 - ✅ **Debugging**: Correlation IDs link all logs for a single request
 - ✅ **Metrics**: Quantify performance improvements
 - ✅ **Alerting**: Proactive notification of issues
 - ✅ **Visualization**: Kibana dashboards for insights
 
 ### Business Benefits
+
 - ✅ **User Analytics**: Understand usage patterns
 - ✅ **Performance SLAs**: Measure and improve response times
 - ✅ **Cost Optimization**: Identify expensive operations
