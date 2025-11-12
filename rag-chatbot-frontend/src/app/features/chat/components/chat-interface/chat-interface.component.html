@@ -1,0 +1,131 @@
+<div class="chat-interface-container">
+    <!-- Toast for notifications -->
+    <p-toast position="top-right" />
+
+    <!-- Loading State -->
+    <div *ngIf="isLoading" class="loading-container">
+        <p-progressSpinner />
+        <p class="loading-text">Loading messages...</p>
+    </div>
+
+    <!-- Messages Container -->
+    <div #messagesContainer class="messages-container" *ngIf="!isLoading">
+        <!-- Empty State -->
+        <div *ngIf="messages.length === 0" class="empty-state">
+            <i class="pi pi-comments" style="font-size: 3rem; color: var(--text-color-secondary)"></i>
+            <h3>No messages yet</h3>
+            <p>Start a conversation by asking a question about your PDFs</p>
+        </div>
+
+        <!-- Messages List -->
+        <div class="messages-list" *ngIf="messages.length > 0">
+            <div *ngFor="let message of messages; trackBy: trackByMessageId" class="message-wrapper" [ngClass]="{
+          'user-message': message.isUserMessage,
+          'bot-message': !message.isUserMessage,
+          'streaming': message.isStreaming
+        }">
+                <!-- Message Bubble -->
+                <div class="message-bubble">
+                    <!-- User Message -->
+                    <div *ngIf="message.isUserMessage" class="message-content user-content">
+                        {{ message.content }}
+                    </div>
+
+                    <!-- Bot Message with Markdown -->
+                    <div *ngIf="!message.isUserMessage" class="message-content bot-content">
+                        <markdown [data]="message.content" [inline]="false" class="markdown-content"></markdown>
+
+                        <!-- Streaming Indicator -->
+                        <span *ngIf="message.isStreaming" class="streaming-cursor">▊</span>
+                    </div>
+
+                    <!-- Timestamp -->
+                    <div class="message-timestamp">
+                        {{ formatTimestamp(message.timestamp) }}
+                    </div>
+
+                    <!-- Source References -->
+                    <div *ngIf="!message.isUserMessage && message.references && message.references.length > 0"
+                        class="references-container">
+                        <div class="references-label">
+                            <i class="pi pi-file-pdf"></i>
+                            Sources:
+                        </div>
+                        <div class="references-badges">
+                            <p-badge *ngFor="let ref of message.references; let i = index"
+                                [value]="ref.pdf + ' - Page ' + ref.page" severity="secondary" class="reference-badge"
+                                (click)="onReferenceClick(ref)" [pTooltip]="'Open ' + ref.pdf + ' at page ' + ref.page"
+                                tooltipPosition="top"></p-badge>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Typing Indicator -->
+            <div *ngIf="isTyping" class="message-wrapper bot-message">
+                <div class="message-bubble typing-bubble">
+                    <div class="typing-indicator">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Input Area -->
+    <div class="input-container">
+        <!-- Warning when no PDFs selected -->
+        <div *ngIf="selectedPdfIds.length === 0" class="no-pdf-warning">
+            <i class="pi pi-exclamation-triangle"></i>
+            Please select at least one PDF to start chatting
+        </div>
+
+        <!-- Model Selection and Input -->
+        <div class="input-row">
+            <!-- LLM Model Selector -->
+            <div class="model-selector">
+                <p-select [(ngModel)]="selectedModel" [options]="availableModels" optionLabel="label"
+                    optionValue="value" placeholder="Select Model" [disabled]="isStreaming" styleClass="model-dropdown">
+                    <ng-template let-model pTemplate="selectedItem">
+                        <div class="model-option">
+                            <i class="pi pi-bolt"></i>
+                            <span>{{ model.label }}</span>
+                        </div>
+                    </ng-template>
+                    <ng-template let-model pTemplate="item">
+                        <div class="model-option">
+                            <div class="model-name">{{ model.label }}</div>
+                            <div class="model-description">{{ model.description }}</div>
+                        </div>
+                    </ng-template>
+                </p-select>
+            </div>
+
+            <!-- Message Input Area -->
+            <div class="message-input-wrapper">
+                <textarea #messageInput pTextarea [(ngModel)]="userInput" (ngModelChange)="onInputChange()"
+                    (keydown)="onKeyPress($event)" [rows]="1" [autoResize]="true" [maxlength]="maxCharacters"
+                    placeholder="Ask a question about your PDFs..."
+                    [disabled]="isStreaming || selectedPdfIds.length === 0" class="message-input"></textarea>
+
+                <!-- Character Count -->
+                <div *ngIf="characterCount > 0" class="character-count"
+                    [ngClass]="{ 'count-warning': characterCount > maxCharacters * 0.9 }">
+                    {{ characterCount }} / {{ maxCharacters }}
+                </div>
+            </div>
+
+            <!-- Send Button -->
+            <button pButton type="button" icon="pi pi-send" [disabled]="!canSendMessage()" (click)="sendMessage()"
+                class="send-button" [loading]="isStreaming" pTooltip="Send message (Enter)"
+                tooltipPosition="top"></button>
+        </div>
+
+        <!-- Input Helper Text -->
+        <div class="input-helper-text">
+            <span>Press <strong>Enter</strong> to send, <strong>Shift+Enter</strong> for new line</span>
+        </div>
+    </div>
+</div>
