@@ -1,0 +1,105 @@
+<div class="pdf-upload-container">
+    <p-panel header="PDF Documents" [toggleable]="true" [collapsed]="false">
+        <!-- Upload Area -->
+        <div class="upload-section mb-4">
+            <p-fileUpload #fileUpload name="files[]" [multiple]="true" [accept]="acceptedFileTypes"
+                [maxFileSize]="maxFileSize" [showUploadButton]="false" [showCancelButton]="false" [auto]="false"
+                [customUpload]="true" (onSelect)="onFileSelect($event)" chooseLabel="Choose PDFs"
+                [disabled]="isUploading" styleClass="w-100">
+                <ng-template pTemplate="content">
+                    <div class="upload-drop-area">
+                        <i class="pi pi-cloud-upload upload-icon"></i>
+                        <p class="upload-text">Drag and drop PDF files here</p>
+                        <p class="upload-hint">or click to browse (Max 50MB per file)</p>
+                    </div>
+                </ng-template>
+            </p-fileUpload>
+
+            <!-- Upload Progress -->
+            <div *ngIf="isUploading" class="upload-progress-container mt-3">
+                <div *ngFor="let upload of getUploadingFiles()" class="upload-progress-item mb-2">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span class="file-name">{{ upload.file.name }}</span>
+                        <button *ngIf="upload.uploading" pButton type="button" icon="pi pi-times"
+                            class="p-button-text p-button-sm p-button-danger" (click)="cancelUpload(upload.file.name)"
+                            pTooltip="Cancel upload"></button>
+                    </div>
+                    <p-progressBar [value]="upload.progress" [showValue]="true"
+                        [style]="{'height': '20px'}"></p-progressBar>
+                    <div *ngIf="upload.error" class="error-message mt-1">
+                        <i class="pi pi-exclamation-triangle"></i>
+                        {{ upload.error }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Selection Warning -->
+        <div *ngIf="uploadedPdfs.length > 0 && !hasSelectedPdfs()" class="alert alert-warning d-flex align-items-center"
+            role="alert">
+            <i class="pi pi-exclamation-triangle me-2"></i>
+            <span>Please select at least one PDF to start chatting</span>
+        </div>
+
+        <!-- Selected Count -->
+        <div *ngIf="hasSelectedPdfs()" class="selected-count mb-3">
+            <span class="badge bg-primary">
+                {{ getSelectedCount() }} PDF{{ getSelectedCount() > 1 ? 's' : '' }} selected
+            </span>
+        </div>
+
+        <!-- PDF List -->
+        <div class="pdf-list">
+            <div *ngIf="uploadedPdfs.length === 0 && !isUploading" class="empty-state text-center py-4">
+                <i class="pi pi-file-pdf empty-icon"></i>
+                <p class="empty-text">No PDFs uploaded yet</p>
+                <p class="empty-hint">Upload PDFs to start chatting</p>
+            </div>
+
+            <div *ngFor="let pdf of uploadedPdfs" class="pdf-item" [class.selected]="isPdfSelected(pdf.id)">
+                <div class="pdf-item-content">
+                    <!-- Checkbox -->
+                    <div class="pdf-checkbox">
+                        <p-checkbox [binary]="true" [ngModel]="isPdfSelected(pdf.id)"
+                            (onChange)="onPdfSelectionChange(pdf.id, $event.checked)"
+                            inputId="pdf-{{ pdf.id }}"></p-checkbox>
+                    </div>
+
+                    <!-- PDF Info -->
+                    <div class="pdf-info flex-grow-1">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div class="pdf-details">
+                                <i class="pi pi-file-pdf pdf-icon me-2"></i>
+                                <span class="pdf-name">{{ pdf.fileName }}</span>
+                            </div>
+                            <button pButton type="button" icon="pi pi-trash"
+                                class="p-button-text p-button-sm p-button-danger delete-btn"
+                                (click)="deletePdf(pdf.id, $event)" pTooltip="Delete PDF"
+                                tooltipPosition="left"></button>
+                        </div>
+
+                        <div class="pdf-metadata">
+                            <span class="metadata-item">
+                                <i class="pi pi-file me-1"></i>
+                                {{ formatFileSize(pdf.fileSize) }}
+                            </span>
+                            <span class="metadata-separator">•</span>
+                            <span class="metadata-item">
+                                <i class="pi pi-calendar me-1"></i>
+                                {{ formatDate(pdf.uploadedAt) }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer Info -->
+        <div *ngIf="uploadedPdfs.length > 0" class="pdf-footer mt-3 pt-3 border-top">
+            <small class="text-muted">
+                <i class="pi pi-info-circle me-1"></i>
+                {{ uploadedPdfs.length }} PDF{{ uploadedPdfs.length > 1 ? 's' : '' }} uploaded
+            </small>
+        </div>
+    </p-panel>
+</div>
