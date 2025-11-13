@@ -1,0 +1,144 @@
+<!-- Desktop View -->
+<div class="chat-history-sidebar" *ngIf="!isMobile">
+    <div class="sidebar-header">
+        <h3>Chat History</h3>
+        <p-button icon="pi pi-plus" label="New Chat" styleClass="p-button-success w-100" (onClick)="onNewChat()"
+            [loading]="loading"></p-button>
+    </div>
+
+    <div class="sidebar-filter">
+        <div class="flex align-items-center justify-content-between">
+            <label for="showArchived" class="mb-0">Show Archived</label>
+            <div class="toggle-switch">
+                <input type="checkbox" id="showArchived" [(ngModel)]="showArchived" (change)="onShowArchivedChange()" />
+                <label for="showArchived" class="toggle-label"></label>
+            </div>
+        </div>
+    </div>
+
+    <div class="chat-list-container">
+        <div *ngIf="loading && filteredChatHistories.length === 0" class="text-center p-3">
+            <i class="pi pi-spin pi-spinner" style="font-size: 2rem"></i>
+            <p class="mt-2">Loading chats...</p>
+        </div>
+
+        <div *ngIf="!loading && filteredChatHistories.length === 0" class="empty-state">
+            <i class="pi pi-comments" style="font-size: 3rem"></i>
+            <p class="mt-3">No chat histories yet</p>
+            <p class="text-muted">Create a new chat to get started</p>
+        </div>
+
+        <div class="chat-list">
+            <div *ngFor="let chat of filteredChatHistories; trackBy: trackByChatId" class="chat-item"
+                [class.active]="chat.id === activeChatId" [class.archived]="chat.isArchived"
+                (click)="onChatSelect(chat)" (contextmenu)="onContextMenu($event, menu, chat)">
+                <div class="chat-item-content">
+                    <div class="chat-item-header">
+                        <span class="chat-name" [title]="chat.name">{{ chat.name }}</span>
+                        <button type="button" class="menu-button"
+                            (click)="$event.stopPropagation(); menu.toggle($event)" pButton icon="pi pi-ellipsis-v"
+                            styleClass="p-button-text p-button-sm p-button-rounded"></button>
+                        <p-menu #menu [model]="getMenuItems(chat)" [popup]="true"></p-menu>
+                    </div>
+
+                    <div class="chat-item-footer">
+                        <span class="chat-timestamp">
+                            <i class="pi pi-clock"></i>
+                            {{ chat.createdAt | relativeTime }}
+                        </span>
+                        <span *ngIf="chat.messageCount" class="message-count">
+                            <i class="pi pi-comment"></i>
+                            {{ chat.messageCount }}
+                        </span>
+                    </div>
+
+                    <div *ngIf="chat.isArchived" class="archived-badge">
+                        <i class="pi pi-folder"></i> Archived
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Mobile View with Manual Sidebar -->
+<div class="mobile-view" *ngIf="isMobile">
+    <button pButton icon="pi pi-bars" class="hamburger-menu" (click)="toggleSidebar()"
+        styleClass="p-button-text"></button>
+
+    <div class="mobile-sidebar" [class.visible]="sidebarVisible">
+        <div class="mobile-sidebar-overlay" (click)="toggleSidebar()"></div>
+        <div class="mobile-sidebar-content">
+            <div class="mobile-sidebar-header">
+                <h3>Chat History</h3>
+                <button pButton icon="pi pi-times" (click)="toggleSidebar()"
+                    styleClass="p-button-text p-button-sm"></button>
+            </div>
+
+            <div class="sidebar-body">
+                <p-button icon="pi pi-plus" label="New Chat" styleClass="p-button-success w-100 mb-3"
+                    (onClick)="onNewChat()" [loading]="loading"></p-button>
+
+                <div class="sidebar-filter mb-3">
+                    <div class="flex align-items-center justify-content-between">
+                        <label for="showArchivedMobile" class="mb-0">Show Archived</label>
+                        <div class="toggle-switch">
+                            <input type="checkbox" id="showArchivedMobile" [(ngModel)]="showArchived"
+                                (change)="onShowArchivedChange()" />
+                            <label for="showArchivedMobile" class="toggle-label"></label>
+                        </div>
+                    </div>
+                </div>
+
+                <div *ngIf="loading && filteredChatHistories.length === 0" class="text-center p-3">
+                    <i class="pi pi-spin pi-spinner" style="font-size: 2rem"></i>
+                    <p class="mt-2">Loading chats...</p>
+                </div>
+
+                <div *ngIf="!loading && filteredChatHistories.length === 0" class="empty-state">
+                    <i class="pi pi-comments" style="font-size: 3rem"></i>
+                    <p class="mt-3">No chat histories yet</p>
+                    <p class="text-muted">Create a new chat to get started</p>
+                </div>
+
+                <div class="chat-list">
+                    <div *ngFor="let chat of filteredChatHistories; trackBy: trackByChatId" class="chat-item"
+                        [class.active]="chat.id === activeChatId" [class.archived]="chat.isArchived"
+                        (click)="onChatSelect(chat)">
+                        <div class="chat-item-content">
+                            <div class="chat-item-header">
+                                <span class="chat-name" [title]="chat.name">{{ chat.name }}</span>
+                                <button type="button" class="menu-button"
+                                    (click)="$event.stopPropagation(); menu.toggle($event)" pButton
+                                    icon="pi pi-ellipsis-v"
+                                    styleClass="p-button-text p-button-sm p-button-rounded"></button>
+                                <p-menu #menu [model]="getMenuItems(chat)" [popup]="true"></p-menu>
+                            </div>
+
+                            <div class="chat-item-footer">
+                                <span class="chat-timestamp">
+                                    <i class="pi pi-clock"></i>
+                                    {{ chat.createdAt | relativeTime }}
+                                </span>
+                                <span *ngIf="chat.messageCount" class="message-count">
+                                    <i class="pi pi-comment"></i>
+                                    {{ chat.messageCount }}
+                                </span>
+                            </div>
+
+                            <div *ngIf="chat.isArchived" class="archived-badge">
+                                <i class="pi pi-folder"></i> Archived
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Toast for notifications -->
+<p-toast></p-toast>
+
+<!-- Confirm Dialog -->
+<p-confirmDialog></p-confirmDialog>

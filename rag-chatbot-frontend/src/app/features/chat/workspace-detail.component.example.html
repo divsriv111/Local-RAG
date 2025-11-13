@@ -1,0 +1,63 @@
+<!-- Example Workspace Detail Component Template -->
+<div class="workspace-container">
+    <!-- Header -->
+    <div class="workspace-header">
+        <div class="header-content">
+            <h2>{{ selectedChatName }}</h2>
+            <div class="header-actions">
+                <!-- Add workspace settings, etc. -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Three-panel layout -->
+    <div class="workspace-content">
+        <!-- Left Sidebar: Chat History (20% width) -->
+        <aside class="sidebar-left">
+            <app-chat-history-sidebar [workspaceId]="workspaceId" [activeChatId]="activeChatId"
+                (chatSelected)="onChatSelected($event)"
+                (newChatCreated)="onNewChatCreated($event)"></app-chat-history-sidebar>
+        </aside>
+
+        <!-- Center Panel: Chat Interface (60% width) -->
+        <main class="main-content">
+            <div class="chat-container">
+                <div class="messages-area">
+                    <!-- TODO: Replace with your ChatInterfaceComponent -->
+                    <div class="placeholder-message">
+                        <i class="pi pi-comments" style="font-size: 4rem; color: #ccc;"></i>
+                        <h3>Start a conversation</h3>
+                        <p *ngIf="!activeChatId">Select a chat from the sidebar or create a new one</p>
+                        <p *ngIf="activeChatId">Send a message to get started</p>
+                    </div>
+                </div>
+
+                <div class="input-area">
+                    <!-- TODO: Replace with your message input component -->
+                    <div class="message-input-placeholder">
+                        <input type="text" class="form-control" placeholder="Type your message here..."
+                            [disabled]="!activeChatId" />
+                        <button class="btn btn-primary" [disabled]="!activeChatId">
+                            <i class="pi pi-send"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Right Sidebar: PDF Upload (20% width) -->
+        <aside class="sidebar-right">
+            <div class="pdf-panel">
+                <h3>Documents</h3>
+                <!-- TODO: Replace with your PDFUploadComponent -->
+                <div class="placeholder-pdf">
+                    <i class="pi pi-file-pdf" style="font-size: 3rem; color: #ccc;"></i>
+                    <p>Upload PDFs to query</p>
+                    <button class="btn btn-outline-primary btn-sm">
+                        <i class="pi pi-upload"></i> Upload PDF
+                    </button>
+                </div>
+            </div>
+        </aside>
+    </div>
+</div>
