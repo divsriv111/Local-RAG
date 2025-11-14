@@ -1,0 +1,191 @@
+<div class="profile-container">
+    <div class="container-fluid">
+        <div class="row justify-content-center">
+            <div class="col-12 col-md-10 col-lg-8 col-xl-6">
+                <!-- Profile Information Card -->
+                <p-card header="Profile Information" styleClass="profile-card">
+                    <ng-template pTemplate="header">
+                        <div class="card-header-custom">
+                            <h3 class="mb-0">Profile Information</h3>
+                        </div>
+                    </ng-template>
+
+                    <!-- Loading State -->
+                    <div *ngIf="isLoadingProfile" class="text-center py-5">
+                        <i class="pi pi-spin pi-spinner" style="font-size: 2rem"></i>
+                        <p class="mt-3">Loading profile...</p>
+                    </div>
+
+                    <!-- Profile Form -->
+                    <form [formGroup]="profileForm" (ngSubmit)="updateProfile()" *ngIf="!isLoadingProfile">
+                        <div class="row">
+                            <!-- Username Field -->
+                            <div class="col-12 mb-4">
+                                <label for="username" class="form-label">
+                                    Username <span class="text-danger">*</span>
+                                </label>
+                                <input id="username" type="text" pInputText formControlName="username" class="w-100"
+                                    [class.ng-invalid]="hasError(profileForm, 'username')"
+                                    [class.ng-dirty]="hasError(profileForm, 'username')" />
+                                <small class="text-danger" *ngIf="hasError(profileForm, 'username')">
+                                    {{ getErrorMessage(profileForm, 'username') }}
+                                </small>
+                            </div>
+
+                            <!-- Email Field -->
+                            <div class="col-12 mb-4">
+                                <label for="email" class="form-label">
+                                    Email <span class="text-danger">*</span>
+                                </label>
+                                <input id="email" type="email" pInputText formControlName="email" class="w-100"
+                                    [class.ng-invalid]="hasError(profileForm, 'email')"
+                                    [class.ng-dirty]="hasError(profileForm, 'email')" />
+                                <small class="text-danger" *ngIf="hasError(profileForm, 'email')">
+                                    {{ getErrorMessage(profileForm, 'email') }}
+                                </small>
+                            </div>
+
+                            <!-- Action Buttons -->
+                            <div class="col-12">
+                                <div class="d-flex gap-2 justify-content-end">
+                                    <p-button label="Cancel" icon="pi pi-times" severity="secondary" [outlined]="true"
+                                        (onClick)="cancelProfileChanges()"
+                                        [disabled]="isUpdatingProfile || !profileForm.dirty"></p-button>
+                                    <p-button label="Update Profile" icon="pi pi-check" severity="primary" type="submit"
+                                        [loading]="isUpdatingProfile"
+                                        [disabled]="profileForm.invalid || !profileForm.dirty"></p-button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </p-card>
+
+                <!-- Change Password Section -->
+                <p-card styleClass="profile-card mt-4">
+                    <ng-template pTemplate="header">
+                        <div class="card-header-custom">
+                            <h3 class="mb-0">Change Password</h3>
+                        </div>
+                    </ng-template>
+
+                    <p-panel [toggleable]="true" [collapsed]="passwordPanelCollapsed"
+                        (collapsedChange)="passwordPanelCollapsed = $event">
+                        <ng-template pTemplate="header">
+                            <div class="d-flex align-items-center gap-2">
+                                <i class="pi pi-lock"></i>
+                                <span>Password Settings</span>
+                            </div>
+                        </ng-template>
+
+                        <form [formGroup]="passwordForm" (ngSubmit)="changePassword()">
+                            <div class="row">
+                                <!-- Current Password -->
+                                <div class="col-12 mb-4">
+                                    <label for="currentPassword" class="form-label">
+                                        Current Password <span class="text-danger">*</span>
+                                    </label>
+                                    <p-password id="currentPassword" formControlName="currentPassword"
+                                        [toggleMask]="true" [feedback]="false" styleClass="w-100"
+                                        inputStyleClass="w-100"
+                                        [class.ng-invalid]="hasError(passwordForm, 'currentPassword')"
+                                        [class.ng-dirty]="hasError(passwordForm, 'currentPassword')"></p-password>
+                                    <small class="text-danger" *ngIf="hasError(passwordForm, 'currentPassword')">
+                                        {{ getErrorMessage(passwordForm, 'currentPassword') }}
+                                    </small>
+                                </div>
+
+                                <!-- New Password -->
+                                <div class="col-12 mb-4">
+                                    <label for="newPassword" class="form-label">
+                                        New Password <span class="text-danger">*</span>
+                                    </label>
+                                    <p-password id="newPassword" formControlName="newPassword" [toggleMask]="true"
+                                        [feedback]="true" styleClass="w-100" inputStyleClass="w-100"
+                                        [class.ng-invalid]="hasError(passwordForm, 'newPassword')"
+                                        [class.ng-dirty]="hasError(passwordForm, 'newPassword')">
+                                        <ng-template pTemplate="header">
+                                            <h6 class="mb-2">Password Requirements:</h6>
+                                        </ng-template>
+                                        <ng-template pTemplate="footer">
+                                            <ul class="pl-3 mb-0 mt-2" style="line-height: 1.5">
+                                                <li>At least 8 characters</li>
+                                                <li>At least one uppercase letter</li>
+                                                <li>At least one number</li>
+                                                <li>At least one special character</li>
+                                            </ul>
+                                        </ng-template>
+                                    </p-password>
+                                    <small class="text-danger" *ngIf="hasError(passwordForm, 'newPassword')">
+                                        {{ getErrorMessage(passwordForm, 'newPassword') }}
+                                    </small>
+                                </div>
+
+                                <!-- Confirm Password -->
+                                <div class="col-12 mb-4">
+                                    <label for="confirmPassword" class="form-label">
+                                        Confirm New Password <span class="text-danger">*</span>
+                                    </label>
+                                    <p-password id="confirmPassword" formControlName="confirmPassword"
+                                        [toggleMask]="true" [feedback]="false" styleClass="w-100"
+                                        inputStyleClass="w-100"
+                                        [class.ng-invalid]="hasError(passwordForm, 'confirmPassword') || passwordForm.errors?.['passwordMismatch']"
+                                        [class.ng-dirty]="hasError(passwordForm, 'confirmPassword')"></p-password>
+                                    <small class="text-danger" *ngIf="hasError(passwordForm, 'confirmPassword')">
+                                        {{ getErrorMessage(passwordForm, 'confirmPassword') }}
+                                    </small>
+                                    <small class="text-danger" *ngIf="getFormError(passwordForm)">
+                                        {{ getFormError(passwordForm) }}
+                                    </small>
+                                </div>
+
+                                <!-- Password Form Action Buttons -->
+                                <div class="col-12">
+                                    <p-message
+                                        *ngIf="passwordForm.errors?.['passwordMismatch'] && passwordForm.get('confirmPassword')?.touched"
+                                        severity="error" text="Passwords do not match"
+                                        styleClass="w-100 mb-3"></p-message>
+
+                                    <div class="d-flex gap-2 justify-content-end">
+                                        <p-button label="Cancel" icon="pi pi-times" severity="secondary"
+                                            [outlined]="true" (onClick)="cancelPasswordChange()"
+                                            [disabled]="isChangingPassword"></p-button>
+                                        <p-button label="Change Password" icon="pi pi-lock" severity="primary"
+                                            type="submit" [loading]="isChangingPassword"
+                                            [disabled]="passwordForm.invalid"></p-button>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </p-panel>
+                </p-card>
+
+                <!-- Account Information -->
+                <p-card *ngIf="currentUser" styleClass="profile-card mt-4">
+                    <ng-template pTemplate="header">
+                        <div class="card-header-custom">
+                            <h3 class="mb-0">Account Information</h3>
+                        </div>
+                    </ng-template>
+
+                    <div class="row">
+                        <div class="col-12 col-sm-6 mb-3">
+                            <label class="text-muted small">User ID</label>
+                            <p class="mb-0 fw-semibold">{{ currentUser.id }}</p>
+                        </div>
+                        <div class="col-12 col-sm-6 mb-3">
+                            <label class="text-muted small">Member Since</label>
+                            <p class="mb-0 fw-semibold">{{ currentUser.createdAt | date: 'mediumDate' }}</p>
+                        </div>
+                        <div class="col-12 col-sm-6 mb-3">
+                            <label class="text-muted small">Last Updated</label>
+                            <p class="mb-0 fw-semibold">{{ currentUser.updatedAt | date: 'medium' }}</p>
+                        </div>
+                    </div>
+                </p-card>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Toast for notifications -->
+<p-toast position="top-right"></p-toast>

@@ -1,0 +1,235 @@
+.profile-container {
+  padding: 2rem 0;
+  min-height: 100vh;
+  background-color: #f8f9fa;
+
+  @media (max-width: 768px) {
+    padding: 1rem 0;
+  }
+}
+
+.profile-card {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  overflow: hidden;
+
+  ::ng-deep {
+    .p-card-header {
+      background-color: #f8f9fa;
+      border-bottom: 1px solid #e9ecef;
+      padding: 0;
+    }
+
+    .p-card-body {
+      padding: 2rem;
+
+      @media (max-width: 768px) {
+        padding: 1.5rem;
+      }
+    }
+
+    .p-card-content {
+      padding: 0;
+    }
+  }
+}
+
+.card-header-custom {
+  padding: 1.5rem 2rem;
+
+  @media (max-width: 768px) {
+    padding: 1rem 1.5rem;
+  }
+
+  h3 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #495057;
+  }
+}
+
+// Form styling
+.form-label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: #495057;
+  font-size: 0.9rem;
+}
+
+// Input fields
+::ng-deep {
+  .p-inputtext {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #ced4da;
+    border-radius: 6px;
+    font-size: 1rem;
+    transition: all 0.2s ease-in-out;
+
+    &:hover {
+      border-color: #adb5bd;
+    }
+
+    &:focus {
+      outline: none;
+      border-color: #86b7fe;
+      box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+    }
+
+    &.ng-invalid.ng-dirty,
+    &.ng-invalid.ng-touched {
+      border-color: #dc3545;
+
+      &:focus {
+        box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.25);
+      }
+    }
+  }
+
+  // Password field styling
+  .p-password {
+    width: 100%;
+
+    .p-inputtext {
+      width: 100%;
+    }
+  }
+
+  // Button styling
+  .p-button {
+    padding: 0.75rem 1.5rem;
+    font-weight: 500;
+    border-radius: 6px;
+    transition: all 0.2s ease-in-out;
+
+    &:hover:not(:disabled) {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    &:active:not(:disabled) {
+      transform: translateY(0);
+    }
+
+    &.p-button-outlined {
+      background-color: transparent;
+    }
+  }
+
+  // Panel styling
+  .p-panel {
+    border: none;
+    box-shadow: none;
+
+    .p-panel-header {
+      background-color: transparent;
+      border: none;
+      padding: 1rem 0;
+      border-bottom: 1px solid #e9ecef;
+
+      .p-panel-title {
+        font-weight: 500;
+        color: #495057;
+      }
+    }
+
+    .p-panel-content {
+      border: none;
+      padding: 1.5rem 0;
+    }
+
+    .p-panel-icons {
+      .p-panel-header-icon {
+        color: #6c757d;
+
+        &:hover {
+          color: #495057;
+        }
+      }
+    }
+  }
+
+  // Message styling
+  .p-message {
+    margin: 0;
+    border-radius: 6px;
+
+    &.p-message-error {
+      background-color: #f8d7da;
+      border: 1px solid #f5c2c7;
+      color: #842029;
+
+      .p-message-icon {
+        color: #842029;
+      }
+    }
+  }
+
+  // Password strength meter
+  .p-password-panel {
+    padding: 1rem;
+    border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+
+    .p-password-meter {
+      margin-bottom: 0.5rem;
+    }
+  }
+}
+
+// Error text
+small.text-danger {
+  display: block;
+  margin-top: 0.25rem;
+  font-size: 0.875rem;
+  color: #dc3545;
+}
+
+// Account information styling
+.text-muted {
+  color: #6c757d !important;
+  font-size: 0.875rem;
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
+.fw-semibold {
+  font-weight: 600;
+}
+
+// Loading spinner
+.pi-spinner {
+  color: #0d6efd;
+}
+
+// Responsive gap utility
+.gap-2 {
+  gap: 0.5rem;
+}
+
+// Button group on mobile
+@media (max-width: 576px) {
+  .d-flex.gap-2 {
+    flex-direction: column;
+    gap: 0.75rem;
+
+    ::ng-deep .p-button {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+}
+
+// Smooth transitions
+* {
+  transition-property: background-color, border-color, color, box-shadow, transform;
+  transition-duration: 0.2s;
+  transition-timing-function: ease-in-out;
+}
+
+// Focus visible for accessibility
+:focus-visible {
+  outline: 2px solid #0d6efd;
+  outline-offset: 2px;
+}
