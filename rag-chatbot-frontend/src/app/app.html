@@ -1,1 +1,82 @@
-<router-outlet></router-outlet>
+<p-toast></p-toast>
+
+<!-- Main Layout Container -->
+<div class="app-container">
+    <!-- Top Navigation Bar -->
+    <header class="app-header" *ngIf="isAuthenticated">
+        <!-- Desktop Navigation -->
+        <div class="desktop-nav">
+            <p-menubar [model]="menuItems">
+                <ng-template pTemplate="start">
+                    <div class="logo-container" (click)="navigateTo('/workspaces')">
+                        <i class="pi pi-comments" style="font-size: 1.5rem; color: var(--primary-color);"></i>
+                        <span class="app-title">{{ title() }}</span>
+                    </div>
+                </ng-template>
+                <ng-template pTemplate="end">
+                    <p-button [icon]="'pi ' + themeIcon" [rounded]="true" [text]="true" severity="secondary"
+                        class="theme-toggle" (click)="toggleTheme()" ariaLabel="Toggle theme">
+                    </p-button>
+                    <p-menu #userMenu [model]="userMenuItems[0]?.items || []" [popup]="true"></p-menu>
+                    <p-button icon="pi pi-user" [rounded]="true" [text]="true" severity="secondary"
+                        [label]="currentUser?.username || 'User'" (onClick)="userMenu.toggle($event)">
+                    </p-button>
+                </ng-template>
+            </p-menubar>
+        </div>
+
+        <!-- Mobile Navigation -->
+        <div class="mobile-nav">
+            <div class="mobile-header">
+                <div class="logo-container" (click)="navigateTo('/workspaces')">
+                    <i class="pi pi-comments" style="font-size: 1.5rem; color: var(--primary-color);"></i>
+                    <span class="app-title">{{ title() }}</span>
+                </div>
+                <p-button icon="pi pi-bars" [rounded]="true" [text]="true" severity="secondary"
+                    (onClick)="toggleSidebar()">
+                </p-button>
+            </div>
+        </div>
+
+        <!-- Mobile Sidebar -->
+        <p-drawer [(visible)]="sidebarVisible" position="right" [style]="{'width':'280px'}">
+            <ng-template #header>
+                <div class="sidebar-header">
+                    <i class="pi pi-user" style="margin-right: 0.5rem;"></i>
+                    <span>{{ currentUser?.username || 'User' }}</span>
+                </div>
+            </ng-template>
+            <div class="sidebar-menu">
+                <div class="menu-item" (click)="navigateTo('/workspaces')">
+                    <i class="pi pi-folder"></i>
+                    <span>Workspaces</span>
+                </div>
+                <div class="menu-item" (click)="navigateTo('/profile')">
+                    <i class="pi pi-user"></i>
+                    <span>Profile</span>
+                </div>
+                <div class="menu-item" (click)="toggleTheme()">
+                    <i [class]="'pi ' + themeIcon"></i>
+                    <span>{{ currentTheme === 'light' ? 'Dark Mode' : 'Light Mode' }}</span>
+                </div>
+                <div class="menu-divider"></div>
+                <div class="menu-item logout" (click)="logout()">
+                    <i class="pi pi-sign-out"></i>
+                    <span>Logout</span>
+                </div>
+            </div>
+        </p-drawer>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="app-content">
+        <router-outlet></router-outlet>
+    </main>
+
+    <!-- Footer -->
+    <footer class="app-footer" *ngIf="isAuthenticated">
+        <div class="footer-content">
+            <span>&copy; {{ currentYear }} RAG Chatbot. All rights reserved.</span>
+        </div>
+    </footer>
+</div>

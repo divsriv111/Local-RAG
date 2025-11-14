@@ -1,0 +1,25 @@
+<div class="error-container">
+    <p-card class="error-card">
+        <div class="error-content">
+            <div class="error-icon">
+                <i class="pi pi-exclamation-triangle" *ngIf="errorCode === '404'"></i>
+                <i class="pi pi-lock" *ngIf="errorCode === '401' || errorCode === '403'"></i>
+                <i class="pi pi-times-circle" *ngIf="errorCode === '500' || errorCode === '503'"></i>
+                <i class="pi pi-ban" *ngIf="errorCode === '400'"></i>
+            </div>
+
+            <h1 class="error-code">{{ errorCode }}</h1>
+            <h2 class="error-title">{{ errorTitle }}</h2>
+            <p class="error-message">{{ errorMessage }}</p>
+
+            <div class="error-actions">
+                <button pButton type="button" label="Go Home" icon="pi pi-home" class="p-button-raised"
+                    (click)="goHome()">
+                </button>
+                <button pButton type="button" label="Go Back" icon="pi pi-arrow-left" class="p-button-outlined"
+                    (click)="goBack()">
+                </button>
+            </div>
+        </div>
+    </p-card>
+</div>
