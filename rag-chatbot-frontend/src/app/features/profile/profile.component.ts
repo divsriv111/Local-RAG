@@ -14,6 +14,7 @@ import { User, UpdateUserDTO } from '../../core/models/user.model';
   selector: 'app-profile',
   templateUrl: './profile.component.html',
   styleUrls: ['./profile.component.scss'],
+  standalone: false,
 })
 export class ProfileComponent implements OnInit {
   profileForm!: FormGroup;
@@ -22,13 +23,20 @@ export class ProfileComponent implements OnInit {
   isLoadingProfile = false;
   isUpdatingProfile = false;
   isChangingPassword = false;
-  passwordPanelCollapsed = true;
+  passwordPanelCollapsed: boolean = true;
 
   constructor(
     private fb: FormBuilder,
     private profileService: ProfileService,
     private messageService: MessageService
   ) {}
+
+  /**
+   * Handle panel collapse change event
+   */
+  onPanelCollapseChange(collapsed: boolean | undefined): void {
+    this.passwordPanelCollapsed = collapsed ?? true;
+  }
 
   ngOnInit(): void {
     this.initializeForms();

@@ -17,7 +17,7 @@ import { MessageService } from 'primeng/api';
 import { PdfUploadComponent } from './pdf-upload.component';
 
 @NgModule({
-  declarations: [PdfUploadComponent],
+  declarations: [],
   imports: [
     CommonModule,
     FormsModule,
@@ -30,6 +30,7 @@ import { PdfUploadComponent } from './pdf-upload.component';
     ButtonModule,
     TooltipModule,
     ToastModule,
+    PdfUploadComponent,
   ],
   exports: [PdfUploadComponent],
   providers: [MessageService],

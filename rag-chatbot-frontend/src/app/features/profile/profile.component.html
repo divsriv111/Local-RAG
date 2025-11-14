@@ -69,7 +69,7 @@
                     </ng-template>
 
                     <p-panel [toggleable]="true" [collapsed]="passwordPanelCollapsed"
-                        (collapsedChange)="passwordPanelCollapsed = $event">
+                        (collapsedChange)="onPanelCollapseChange($event)">
                         <ng-template pTemplate="header">
                             <div class="d-flex align-items-center gap-2">
                                 <i class="pi pi-lock"></i>

@@ -7,6 +7,7 @@
 
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { PdfUploadComponent } from './pdf-upload.component';
 import { PdfService } from '../../core/services/pdf.service';
 import { PdfDocument } from '../../core/models/pdf-document.model';
@@ -347,7 +348,7 @@ export class ProgrammaticExampleComponent {
 @Component({
   selector: 'app-multi-workspace-example',
   standalone: true,
-  imports: [CommonModule, PdfUploadComponent, ToastModule],
+  imports: [CommonModule, FormsModule, PdfUploadComponent, ToastModule],
   template: `
     <div class="container-fluid p-4">
       <div class="row mb-3">
