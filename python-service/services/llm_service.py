@@ -22,14 +22,14 @@ class LLMManager:
         self.openai_api_key = settings.openai_api_key
         self.local_llm_base_url = settings.local_llm_base_url
         self.ollama_base_url = settings.ollama_base_url
-        
+
         # Cache for LLM instances
         self._llm_cache: Dict[str, BaseChatModel] = {}
 
     def get_llm(self, model_name: str) -> BaseChatModel:
         """
         Get LLM instance based on model name.
-        
+
         Supports:
         - GPT models: "gpt-4-turbo", "gpt-4.1-mini" (gpt-4o-mini)
         - Local models via Ollama: "local-llama-3", "local-mistral"
@@ -55,43 +55,46 @@ class LLMManager:
 
         try:
             llm = None
-            
+
             # OpenAI models (GPT-4, GPT-4o-mini, etc.)
             if model.startswith("gpt-") or model.startswith("o1-"):
                 llm = self._get_openai_llm(model)
-            
+
             # Local models (try LMStudio first, fallback to Ollama)
             elif model.startswith("local-"):
                 llm = self._get_local_llm(model)
-            
+
             # Default to gpt-4o-mini
             else:
-                logger.warning(f"Unknown model {model}, defaulting to gpt-4o-mini")
+                logger.warning(
+                    f"Unknown model {model}, defaulting to gpt-4o-mini")
                 llm = self._get_openai_llm("gpt-4o-mini")
-            
+
             # Cache the LLM instance
             self._llm_cache[cache_key] = llm
-            logger.info(f"LLM instance created and cached for model: {model_name}")
-            
+            logger.info(
+                f"LLM instance created and cached for model: {model_name}")
+
             return llm
 
         except Exception as e:
-            logger.error(f"Error initializing LLM {model}: {str(e)}", exc_info=True)
+            logger.error(
+                f"Error initializing LLM {model}: {str(e)}", exc_info=True)
             raise ValueError(f"Failed to initialize model '{model}': {str(e)}")
-    
+
     def _get_openai_llm(self, model_name: str) -> ChatOpenAI:
         """
         Get OpenAI ChatGPT model instance with streaming support.
-        
+
         Args:
             model_name: OpenAI model name
-            
+
         Returns:
             ChatOpenAI instance with streaming enabled
         """
         if not self.openai_api_key:
             raise ValueError("OpenAI API key not configured")
-        
+
         # Map model names to OpenAI model IDs
         model_map = {
             'gpt-4-turbo': 'gpt-4-turbo-preview',
@@ -100,11 +103,11 @@ class LLMManager:
             'gpt-4': 'gpt-4',
             'gpt-3.5-turbo': 'gpt-3.5-turbo'
         }
-        
+
         openai_model_id = model_map.get(model_name, model_name)
-        
+
         logger.info(f"Initializing OpenAI model: {openai_model_id}")
-        
+
         return ChatOpenAI(
             model=openai_model_id,
             temperature=self.temperature,
@@ -114,24 +117,25 @@ class LLMManager:
             request_timeout=120,
             max_retries=3
         )
-    
+
     def _get_local_llm(self, model_name: str) -> BaseChatModel:
         """
         Get local model instance with LMStudio fallback to Ollama.
-        
+
         Args:
             model_name: Local model name (e.g., 'local-llama-3', 'local-mistral')
-            
+
         Returns:
             Local LLM instance
         """
         # Extract actual model name
         actual_model = model_name.replace('local-', '')
-        
+
         # Try LMStudio first (OpenAI-compatible API)
         try:
-            logger.info(f"Attempting to connect to LMStudio for model: {actual_model}")
-            
+            logger.info(
+                f"Attempting to connect to LMStudio for model: {actual_model}")
+
             llm = ChatOpenAI(
                 model=actual_model,
                 temperature=self.temperature,
@@ -141,25 +145,27 @@ class LLMManager:
                 streaming=True,
                 request_timeout=120
             )
-            
+
             # Test connection with a simple query
             llm.invoke([HumanMessage(content="test")])
-            logger.info(f"Successfully connected to LMStudio for model: {actual_model}")
+            logger.info(
+                f"Successfully connected to LMStudio for model: {actual_model}")
             return llm
-            
+
         except Exception as e:
-            logger.warning(f"LMStudio unavailable: {str(e)}, falling back to Ollama")
-            
+            logger.warning(
+                f"LMStudio unavailable: {str(e)}, falling back to Ollama")
+
             # Fall back to Ollama
             return self._get_ollama_llm(actual_model)
-    
+
     def _get_ollama_llm(self, model_name: str) -> ChatOllama:
         """
         Get Ollama model instance.
-        
+
         Args:
             model_name: Ollama model name (e.g., 'llama-3', 'mistral')
-            
+
         Returns:
             ChatOllama instance
         """
@@ -171,11 +177,11 @@ class LLMManager:
             'codellama': 'codellama',
             'phi': 'phi'
         }
-        
+
         ollama_model = model_map.get(model_name, model_name)
-        
+
         logger.info(f"Initializing Ollama model: {ollama_model}")
-        
+
         try:
             return ChatOllama(
                 model=ollama_model,
@@ -183,9 +189,10 @@ class LLMManager:
                 base_url=self.ollama_base_url
             )
         except Exception as e:
-            logger.error(f"Failed to initialize Ollama model '{ollama_model}': {str(e)}")
+            logger.error(
+                f"Failed to initialize Ollama model '{ollama_model}': {str(e)}")
             raise ValueError(f"Ollama model '{ollama_model}' is not available. "
-                           f"Please ensure Ollama is running and the model is pulled.")
+                             f"Please ensure Ollama is running and the model is pulled.")
 
     def generate_response(
         self,
@@ -236,7 +243,8 @@ class LLMManager:
             return response_text
 
         except Exception as e:
-            logger.error(f"Error generating response with {model_name}: {str(e)}", exc_info=True)
+            logger.error(
+                f"Error generating response with {model_name}: {str(e)}", exc_info=True)
             return f"Error: Unable to generate response. {str(e)}"
 
     def generate_response_stream(
@@ -260,7 +268,7 @@ class LLMManager:
         """
         start_time = time.time()
         token_count = 0
-        
+
         try:
             llm = self.get_llm(model_name)
 
@@ -279,7 +287,7 @@ class LLMManager:
                     token = str(chunk)
                     token_count += 1
                     yield token
-            
+
             # Log metrics after completion
             elapsed_time = (time.time() - start_time) * 1000
             logger.info(
@@ -288,7 +296,8 @@ class LLMManager:
             )
 
         except Exception as e:
-            logger.error(f"Error streaming response with {model_name}: {str(e)}", exc_info=True)
+            logger.error(
+                f"Error streaming response with {model_name}: {str(e)}", exc_info=True)
             yield f"\n\nError: Unable to generate response. {str(e)}"
 
     def _build_messages(
@@ -387,7 +396,7 @@ Question: {query}"""
                 'available': False,
                 'error': str(e)
             }
-    
+
     def clear_cache(self):
         """Clear LLM instance cache"""
         self._llm_cache.clear()
@@ -401,11 +410,16 @@ Question: {query}"""
             List of model info dictionaries with name, status, and provider
         """
         models = [
-            {"name": "gpt-4-turbo", "provider": "openai", "description": "GPT-4 Turbo Preview"},
-            {"name": "gpt-4.1-mini", "provider": "openai", "description": "GPT-4o Mini (mapped to gpt-4o-mini)"},
-            {"name": "gpt-4o-mini", "provider": "openai", "description": "GPT-4o Mini"},
-            {"name": "local-llama-3", "provider": "ollama/lmstudio", "description": "LLaMA 3 (via LMStudio or Ollama)"},
-            {"name": "local-mistral", "provider": "ollama/lmstudio", "description": "Mistral (via LMStudio or Ollama)"},
+            {"name": "gpt-4-turbo", "provider": "openai",
+                "description": "GPT-4 Turbo Preview"},
+            {"name": "gpt-4.1-mini", "provider": "openai",
+                "description": "GPT-4o Mini (mapped to gpt-4o-mini)"},
+            {"name": "gpt-4o-mini", "provider": "openai",
+                "description": "GPT-4o Mini"},
+            {"name": "local-llama-3", "provider": "ollama/lmstudio",
+                "description": "LLaMA 3 (via LMStudio or Ollama)"},
+            {"name": "local-mistral", "provider": "ollama/lmstudio",
+                "description": "Mistral (via LMStudio or Ollama)"},
         ]
 
         result = []
