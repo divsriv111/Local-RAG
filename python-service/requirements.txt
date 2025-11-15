@@ -11,7 +11,8 @@ langchain-text-splitters==0.3.2
 
 # Vector Database
 chromadb==0.5.20
-# Alternative: qdrant-client==1.11.3
+qdrant-client==1.11.3
+langchain-qdrant==0.1.4
 
 # PDF Processing
 pypdf==5.1.0
