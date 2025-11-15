@@ -24,6 +24,7 @@ from services.pdf_processor import PDFProcessor
 from services.vector_store import VectorStoreManager
 from services.llm_service import LLMManager
 from utils.logger import get_logger
+from utils.monitoring import HealthChecker, metrics_collector
 
 logger = get_logger(__name__)
 
@@ -33,12 +34,6 @@ rag_service: Optional[RAGService] = None
 pdf_processor: Optional[PDFProcessor] = None
 vector_store: Optional[VectorStoreManager] = None
 llm_manager: Optional[LLMManager] = None
-
-# Metrics
-app_start_time = time.time()
-total_queries = 0
-total_response_time = 0.0
-active_connections = 0
 
 
 @asynccontextmanager
@@ -88,20 +83,23 @@ app.add_middleware(
 # Logging middleware
 @app.middleware("http")
 async def log_requests(request: Request, call_next):
-    """Middleware for logging requests and adding correlation ID."""
-    global active_connections
-
-    # Generate correlation ID
-    correlation_id = str(uuid.uuid4())
+    """Middleware for logging requests with method, path, duration, and correlation ID."""
+    # Generate correlation ID from header or create new
+    correlation_id = request.headers.get("X-Correlation-ID", str(uuid.uuid4()))
     request.state.correlation_id = correlation_id
 
     # Track active connections
-    active_connections += 1
+    metrics_collector.increment_connections()
 
     # Log request
     logger.info(
         f"Request: {request.method} {request.url.path}",
-        extra={"correlation_id": correlation_id}
+        extra={
+            "correlation_id": correlation_id,
+            "method": request.method,
+            "path": request.url.path,
+            "client": request.client.host if request.client else "unknown"
+        }
     )
 
     start_time = time.time()
@@ -110,19 +108,32 @@ async def log_requests(request: Request, call_next):
         # Process request
         response = await call_next(request)
 
+        # Calculate duration
+        duration = (time.time() - start_time) * 1000
+
+        # Record metrics for query endpoints
+        if "/api/llm/query" in request.url.path:
+            metrics_collector.record_query(duration / 1000)
+
         # Add correlation ID to response headers
         response.headers["X-Correlation-ID"] = correlation_id
 
         # Log response
-        duration = (time.time() - start_time) * 1000
         logger.info(
             f"Response: {response.status_code} in {duration:.2f}ms",
-            extra={"correlation_id": correlation_id}
+            extra={
+                "correlation_id": correlation_id,
+                "status_code": response.status_code,
+                "duration_ms": round(duration, 2)
+            }
         )
 
         return response
 
     except Exception as e:
+        # Record error
+        metrics_collector.record_error()
+
         logger.error(
             f"Request error: {str(e)}",
             extra={"correlation_id": correlation_id},
@@ -131,7 +142,7 @@ async def log_requests(request: Request, call_next):
         raise
 
     finally:
-        active_connections -= 1
+        metrics_collector.decrement_connections()
 
 
 # Exception handlers
@@ -168,6 +179,9 @@ async def global_exception_handler(request: Request, exc: Exception):
 async def health_check():
     """
     Health check endpoint to verify service status.
+    - Checks if service is running
+    - Verifies vector database connection
+    - Tests LLM API availability (OpenAI ping)
 
     Returns:
         Service health status with component checks
@@ -178,22 +192,19 @@ async def health_check():
         "llm": False
     }
 
-    # Check vector database
-    try:
-        if vector_store:
-            # Simple check - try to get a collection
-            checks["vector_db"] = True
-    except Exception as e:
-        logger.error(f"Vector DB health check failed: {e}")
+    # Check vector database connection
+    vector_db_check = HealthChecker.check_vector_db(vector_store)
+    checks["vector_db"] = vector_db_check.get("healthy", False)
 
-    # Check LLM availability
-    try:
-        if llm_manager and settings.openai_api_key:
-            checks["llm"] = True
-    except Exception as e:
-        logger.error(f"LLM health check failed: {e}")
+    # Check LLM API availability
+    llm_check = HealthChecker.check_llm_api(
+        llm_manager, settings.openai_api_key)
+    checks["llm"] = llm_check.get("healthy", False)
 
+    # Overall status
     status = "healthy" if all(checks.values()) else "degraded"
+
+    logger.debug(f"Health check: {status} - {checks}")
 
     return HealthResponse(
         status=status,
@@ -222,8 +233,6 @@ async def llm_query(request: LLMQueryRequest, http_request: Request):
     Returns:
         StreamingResponse with text/event-stream content type
     """
-    global total_queries, total_response_time
-
     if not rag_service:
         raise HTTPException(
             status_code=503, detail="RAG service not initialized")
@@ -245,7 +254,6 @@ async def llm_query(request: LLMQueryRequest, http_request: Request):
         }
     )
 
-    total_queries += 1
     start_time = time.time()
 
     async def generate_stream():
@@ -315,12 +323,8 @@ async def llm_query(request: LLMQueryRequest, http_request: Request):
             yield f"data: {json.dumps(error_chunk)}\n\n"
 
         finally:
-            # Update metrics
-            elapsed = time.time() - start_time
-            global total_response_time
-            total_response_time += elapsed
-
             # Final logging summary
+            elapsed = time.time() - start_time
             if not error_occurred:
                 logger.info(
                     f"Query session closed - Total time: {elapsed*1000:.2f}ms",
@@ -403,16 +407,17 @@ async def process_pdfs(request: ProcessPDFRequest):
 
 
 # Test LLM endpoint
-@app.post("/api/test-llm")
+@app.post("/test-llm")
 async def test_llm(request: TestLLMRequest):
     """
     Test LLM connectivity and availability.
+    Sends a simple query 'Say hello' to verify the model is working.
 
     Args:
-        request: Test LLM request
+        request: Test LLM request with model_name
 
     Returns:
-        Test result with success status and latency
+        Test result with success status, response, and latency
     """
     if not llm_manager:
         raise HTTPException(
@@ -421,24 +426,32 @@ async def test_llm(request: TestLLMRequest):
     try:
         start_time = time.time()
 
-        success, message = llm_manager.test_model(request.model_name)
+        # Test model with simple query
+        test_result = llm_manager.test_model_availability(request.model_name)
 
         latency_ms = (time.time() - start_time) * 1000
 
         return {
-            "success": success,
-            "message": message,
-            "latency_ms": latency_ms,
-            "model_name": request.model_name
+            "success": test_result.get('available', False),
+            "response": test_result.get('response', ''),
+            "latency_ms": round(latency_ms, 2),
+            "model_name": request.model_name,
+            "error": test_result.get('error', None)
         }
 
     except Exception as e:
         logger.error(f"Error testing LLM: {str(e)}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        return {
+            "success": False,
+            "response": "",
+            "latency_ms": 0,
+            "model_name": request.model_name,
+            "error": str(e)
+        }
 
 
 # Get available models endpoint
-@app.get("/api/models", response_model=ModelsResponse)
+@app.get("/models", response_model=ModelsResponse)
 async def get_models():
     """
     Get list of available LLM models.
@@ -459,42 +472,49 @@ async def get_models():
         raise HTTPException(status_code=500, detail=str(e))
 
 
-# Metrics endpoint
-@app.get("/api/metrics", response_model=MetricsResponse)
+# Metrics endpoint (JSON format)
+@app.get("/metrics", response_model=MetricsResponse)
 async def get_metrics():
     """
-    Get service metrics.
+    Get service metrics in JSON format.
 
     Returns:
-        Service metrics including query count, response times, etc.
+        Service metrics including:
+        - Total queries processed
+        - Average response time
+        - Response time percentiles (p50, p95, p99)
+        - Active connections
+        - Memory usage
+        - Vector database size
     """
-    import psutil
-
-    uptime = time.time() - app_start_time
-    avg_response_time = total_response_time / \
-        total_queries if total_queries > 0 else 0.0
-
-    # Get memory usage
-    process = psutil.Process()
-    memory_mb = process.memory_info().rss / 1024 / 1024
-
-    # Get vector DB size (rough estimate)
-    import os
-    vector_db_size = 0
-    if os.path.exists(settings.vector_db_path):
-        for dirpath, dirnames, filenames in os.walk(settings.vector_db_path):
-            for filename in filenames:
-                filepath = os.path.join(dirpath, filename)
-                vector_db_size += os.path.getsize(filepath)
-    vector_db_size_mb = vector_db_size / 1024 / 1024
+    metrics = metrics_collector.get_metrics(settings.vector_db_path)
 
     return MetricsResponse(
-        total_queries=total_queries,
-        average_response_time_ms=avg_response_time * 1000,
-        active_connections=active_connections,
-        memory_usage_mb=memory_mb,
-        vector_db_size_mb=vector_db_size_mb,
-        uptime_seconds=uptime
+        total_queries=metrics["total_queries"],
+        average_response_time_ms=metrics["average_response_time_ms"],
+        active_connections=metrics["active_connections"],
+        memory_usage_mb=metrics.get("memory_mb", 0.0),
+        vector_db_size_mb=metrics["vector_db_size_mb"],
+        uptime_seconds=metrics["uptime_seconds"]
+    )
+
+
+# Metrics endpoint (Prometheus format)
+@app.get("/metrics/prometheus")
+async def get_metrics_prometheus():
+    """
+    Get service metrics in Prometheus exposition format.
+
+    Returns:
+        Plain text metrics in Prometheus format
+    """
+    prometheus_metrics = metrics_collector.get_prometheus_format(
+        settings.vector_db_path)
+
+    from fastapi.responses import PlainTextResponse
+    return PlainTextResponse(
+        content=prometheus_metrics,
+        media_type="text/plain; version=0.0.4"
     )
 
 

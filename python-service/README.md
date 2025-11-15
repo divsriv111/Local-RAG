@@ -10,7 +10,9 @@ FastAPI microservice for LLM interactions with RAG (Retrieval-Augmented Generati
 - 🔍 **Semantic Search**: Retrieve relevant document chunks
 - 📝 **Source Citations**: Transparent references in responses
 - 🌊 **Streaming Responses**: Real-time token streaming
-- 📊 **Monitoring**: Health checks, metrics, logging
+- 📊 **Monitoring & Health Checks**: Comprehensive endpoint monitoring
+- 🔍 **Distributed Tracing**: Correlation ID support
+- 📈 **Metrics Export**: JSON and Prometheus formats
 
 ## Project Structure
 
@@ -29,8 +31,13 @@ python-service/
 │   ├── rag_service.py     # RAG pipeline
 │   ├── pdf_processor.py   # PDF parsing and chunking
 │   └── vector_store.py    # Vector database operations
-└── utils/
-    └── logger.py          # Logging configuration
+├── utils/
+│   ├── logger.py          # Logging configuration
+│   └── monitoring.py      # Health checks and metrics
+└── docs/
+    ├── MONITORING_ENDPOINTS.md              # Monitoring API docs
+    ├── MONITORING_IMPLEMENTATION_SUMMARY.md # Quick reference
+    └── MONITORING_CHECKLIST.md              # Implementation checklist
 ```
 
 ## Setup
@@ -208,9 +215,9 @@ Test LLM connectivity.
 }
 ```
 
-#### `GET /api/metrics`
+#### `GET /metrics`
 
-Get service metrics.
+Get service metrics in JSON format.
 
 **Response:**
 
@@ -224,6 +231,74 @@ Get service metrics.
   "uptime_seconds": 86400.0
 }
 ```
+
+#### `GET /metrics/prometheus`
+
+Get service metrics in Prometheus format for scraping.
+
+**Response:** Plain text in Prometheus exposition format
+
+```
+# HELP rag_total_queries Total number of queries processed
+# TYPE rag_total_queries counter
+rag_total_queries 1250
+...
+```
+
+#### `POST /test-llm`
+
+Test LLM connectivity by sending a simple query.
+
+**Request:**
+
+```json
+{
+  "model_name": "gpt-4-turbo"
+}
+```
+
+**Response:**
+
+```json
+{
+  "success": true,
+  "response": "Hello! How can I assist you today?",
+  "latency_ms": 150.5,
+  "model_name": "gpt-4-turbo"
+}
+```
+
+#### `GET /models`
+
+Get list of available LLM models.
+
+**Response:**
+
+```json
+{
+  "models": [
+    {
+      "name": "gpt-4-turbo",
+      "status": "available",
+      "provider": "openai",
+      "description": "GPT-4 Turbo Preview"
+    }
+  ]
+}
+```
+
+### Monitoring Features
+
+For complete monitoring documentation, see [MONITORING_ENDPOINTS.md](MONITORING_ENDPOINTS.md).
+
+**Key Features:**
+
+- ✅ Health checks for service, vector DB, and LLM
+- ✅ Performance metrics (queries, latency, connections)
+- ✅ Resource monitoring (memory, disk, CPU)
+- ✅ Prometheus integration
+- ✅ Distributed tracing with correlation IDs
+- ✅ Centralized logging to Elasticsearch
 
 ## Configuration
 
