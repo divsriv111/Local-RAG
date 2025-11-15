@@ -307,7 +307,7 @@ class LLMManager:
         chat_history: Optional[list] = None
     ) -> list:
         """
-        Build message list for LLM using LangChain message types.
+        Build message list for LLM using LangChain message types with structured prompt template.
 
         Args:
             query: User query
@@ -317,20 +317,7 @@ class LLMManager:
         Returns:
             List of LangChain message objects
         """
-        # System prompt
-        system_prompt = """You are a helpful AI assistant. Answer the user's question based ONLY on the provided context from PDF documents.
-
-Instructions:
-- Provide accurate and detailed answers based on the context
-- If the answer is not in the context, say "I don't have enough information to answer this question."
-- Cite sources using [Source: filename.pdf, Page X] format
-- Use markdown formatting for better readability (bold, italic, lists, code blocks)
-- Be concise but thorough
-- Include clickable references at the end
-
-Always ground your answers in the provided context."""
-
-        # Format chat history
+        # Format chat history (last 5 messages)
         history_text = ""
         if chat_history:
             history_lines = []
@@ -343,19 +330,32 @@ Always ground your answers in the provided context."""
                     history_lines.append(f"Assistant: {content}")
             history_text = "\n".join(history_lines)
 
-        # Build user message with context and query
-        user_message = f"""Context from PDF documents:
+        if not history_text:
+            history_text = "No previous conversation."
+
+        # Build structured prompt following the specified template
+        prompt_template = f"""You are a helpful AI assistant. Answer the user's question based ONLY on the following context from PDF documents.
+If the answer is not in the context, say "I don't have enough information to answer this question."
+
+Context:
 {context}
 
 Previous conversation:
 {history_text}
 
-Question: {query}"""
+User question: {query}
 
-        # Return messages as LangChain message objects
+Instructions:
+- Provide a detailed and accurate answer
+- Cite sources using [Source: filename.pdf, Page X] format
+- Use markdown for formatting (bold, italic, lists, code blocks)
+- Include clickable references at the end
+
+Answer:"""
+
+        # Return as single user message (some models work better this way)
         return [
-            SystemMessage(content=system_prompt),
-            HumanMessage(content=user_message)
+            HumanMessage(content=prompt_template)
         ]
 
     def test_model_availability(self, model_name: str) -> Dict[str, Any]:
