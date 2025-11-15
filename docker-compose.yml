@@ -1,0 +1,125 @@
+version: "3.8"
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:17-alpine
+    container_name: rag-postgres
+    environment:
+      POSTGRES_DB: rag_chatbot
+      POSTGRES_USER: raguser
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U raguser"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - rag-network
+
+  # ASP.NET Core API
+  backend-api:
+    build:
+      context: .
+      dockerfile: API/Dockerfile
+    container_name: rag-backend-api
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://+:5000
+      - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=rag_chatbot;Username=raguser;Password=${POSTGRES_PASSWORD:-changeme}
+      - JwtSettings__SecretKey=${JWT_SECRET_KEY}
+      - JwtSettings__Issuer=rag-chatbot-api
+      - JwtSettings__Audience=rag-chatbot-frontend
+      - PythonService__BaseUrl=http://python-llm:8000
+      - Elasticsearch__Uri=http://elasticsearch:9200
+    ports:
+      - "5000:5000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      python-llm:
+        condition: service_started
+    volumes:
+      - ./uploads:/app/uploads
+    networks:
+      - rag-network
+
+  # Python LLM Service
+  python-llm:
+    build:
+      context: ./python-service
+      dockerfile: Dockerfile
+    container_name: rag-python-llm
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - VECTOR_DB_PATH=/data/chromadb
+      - UPLOAD_FOLDER=/app/uploads
+      - ELASTICSEARCH_URL=http://elasticsearch:9200
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./uploads:/app/uploads:ro
+      - chromadb-data:/data/chromadb
+    networks:
+      - rag-network
+
+  # Angular Frontend
+  frontend:
+    build:
+      context: ./rag-chatbot-frontend
+      dockerfile: Dockerfile
+    container_name: rag-frontend
+    ports:
+      - "4200:80"
+    depends_on:
+      - backend-api
+    networks:
+      - rag-network
+
+  # Elasticsearch
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.0
+    container_name: rag-elasticsearch
+    environment:
+      - discovery.type=single-node
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - xpack.security.enabled=false
+    volumes:
+      - elasticsearch-data:/usr/share/elasticsearch/data
+    ports:
+      - "9200:9200"
+    networks:
+      - rag-network
+    healthcheck:
+      test:
+        ["CMD-SHELL", "curl -s http://localhost:9200 | grep -q 'cluster_name'"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+
+  # Kibana
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.11.0
+    container_name: rag-kibana
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    ports:
+      - "5601:5601"
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    networks:
+      - rag-network
+
+volumes:
+  postgres-data:
+  chromadb-data:
+  elasticsearch-data:
+
+networks:
+  rag-network:
+    driver: bridge
