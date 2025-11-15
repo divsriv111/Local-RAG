@@ -1,0 +1,38 @@
+# FastAPI and Web Server
+fastapi==0.115.0
+uvicorn[standard]==0.32.0
+
+# LangChain and LLM Integration
+langchain==0.3.7
+langchain-community==0.3.5
+langchain-openai==0.2.5
+langchain-huggingface==0.1.2
+langchain-text-splitters==0.3.2
+
+# Vector Database
+chromadb==0.5.20
+# Alternative: qdrant-client==1.11.3
+
+# PDF Processing
+pypdf==5.1.0
+# Alternative: pymupdf==1.24.13
+
+# Embeddings
+sentence-transformers==3.2.1
+
+# Environment and Configuration
+python-dotenv==1.0.1
+pydantic==2.10.2
+pydantic-settings==2.6.1
+
+# File Upload and Forms
+python-multipart==0.0.18
+
+# HTTP Client
+httpx==0.28.0
+
+# Logging and Monitoring
+elasticsearch==8.16.0
+
+# Utilities
+tiktoken==0.8.0
