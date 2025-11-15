@@ -81,7 +81,7 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
-    expose_headers=["X-Correlation-ID"]
+    expose_headers=["X-Correlation-ID", "Content-Type", "X-Accel-Buffering"]
 )
 
 
@@ -205,15 +205,22 @@ async def health_check():
 
 # LLM query endpoint with streaming
 @app.post("/api/llm/query")
-async def llm_query(request: LLMQueryRequest):
+async def llm_query(request: LLMQueryRequest, http_request: Request):
     """
-    Process LLM query with RAG pipeline and stream response.
+    Process LLM query with RAG pipeline and stream response in real-time.
+
+    Streaming Format (Server-Sent Events):
+    - Token chunk: {"type": "token", "content": "word"}
+    - Source chunk: {"type": "source", "pdf": "file.pdf", "page": 3}
+    - Final chunk: {"type": "done", "answer": "...", "references": [...]}
+    - Error chunk: {"type": "error", "message": "..."}
 
     Args:
         request: LLM query request
+        http_request: HTTP request for correlation ID
 
     Returns:
-        Streaming response with tokens and metadata
+        StreamingResponse with text/event-stream content type
     """
     global total_queries, total_response_time
 
@@ -221,11 +228,20 @@ async def llm_query(request: LLMQueryRequest):
         raise HTTPException(
             status_code=503, detail="RAG service not initialized")
 
+    # Get correlation ID from request
+    correlation_id = getattr(
+        http_request.state, 'correlation_id', str(uuid.uuid4()))
+
+    # Log query start with detailed info
     logger.info(
-        f"Processing LLM query for workspace {request.workspace_id}",
+        f"Starting LLM query - Workspace: {request.workspace_id}, Model: {request.model_name}, Query length: {len(request.query)}",
         extra={
+            "correlation_id": correlation_id,
             "workspace_id": request.workspace_id,
-            "model_name": request.model_name
+            "model_name": request.model_name,
+            "query_length": len(request.query),
+            "pdf_count": len(request.pdf_ids),
+            "chat_history_id": request.chat_history_id
         }
     )
 
@@ -233,7 +249,11 @@ async def llm_query(request: LLMQueryRequest):
     start_time = time.time()
 
     async def generate_stream():
-        """Generate streaming response."""
+        """Generate streaming response with proper SSE format."""
+        retrieved_chunks_count = 0
+        token_count = 0
+        error_occurred = False
+
         try:
             for chunk in rag_service.query_stream(
                 query=request.query,
@@ -242,15 +262,55 @@ async def llm_query(request: LLMQueryRequest):
                 model_name=request.model_name,
                 chat_history=request.chat_history
             ):
+                # Track metrics
+                chunk_type = chunk.get("type", "unknown")
+                if chunk_type == "source":
+                    retrieved_chunks_count += 1
+                elif chunk_type == "token":
+                    token_count += 1
+
                 # Format as Server-Sent Event
                 chunk_json = json.dumps(chunk)
                 yield f"data: {chunk_json}\n\n"
 
+            # Log successful completion
+            elapsed = time.time() - start_time
+            logger.info(
+                f"LLM query completed - Model: {request.model_name}, "
+                f"Retrieved chunks: {retrieved_chunks_count}, "
+                f"Tokens: {token_count}, "
+                f"Response time: {elapsed*1000:.2f}ms",
+                extra={
+                    "correlation_id": correlation_id,
+                    "workspace_id": request.workspace_id,
+                    "model_name": request.model_name,
+                    "retrieved_chunks": retrieved_chunks_count,
+                    "token_count": token_count,
+                    "response_time_ms": elapsed * 1000
+                }
+            )
+
         except Exception as e:
-            logger.error(f"Error in streaming: {str(e)}", exc_info=True)
+            error_occurred = True
+            elapsed = time.time() - start_time
+
+            # Log error with full context
+            logger.error(
+                f"Error in streaming LLM query: {str(e)}",
+                extra={
+                    "correlation_id": correlation_id,
+                    "workspace_id": request.workspace_id,
+                    "model_name": request.model_name,
+                    "error_type": type(e).__name__,
+                    "response_time_ms": elapsed * 1000
+                },
+                exc_info=True
+            )
+
+            # Send error event to client
             error_chunk = {
                 "type": "error",
-                "message": str(e)
+                "message": f"An error occurred while generating the response: {str(e)}"
             }
             yield f"data: {json.dumps(error_chunk)}\n\n"
 
@@ -260,12 +320,24 @@ async def llm_query(request: LLMQueryRequest):
             global total_response_time
             total_response_time += elapsed
 
+            # Final logging summary
+            if not error_occurred:
+                logger.info(
+                    f"Query session closed - Total time: {elapsed*1000:.2f}ms",
+                    extra={
+                        "correlation_id": correlation_id,
+                        "total_time_ms": elapsed * 1000
+                    }
+                )
+
     return StreamingResponse(
         generate_stream(),
         media_type="text/event-stream",
         headers={
             "Cache-Control": "no-cache",
             "Connection": "keep-alive",
+            "X-Correlation-ID": correlation_id,
+            "X-Accel-Buffering": "no",  # Disable buffering for nginx
         }
     )
 

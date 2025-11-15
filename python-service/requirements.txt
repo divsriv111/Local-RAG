@@ -37,3 +37,8 @@ elasticsearch==8.16.0
 
 # Utilities
 tiktoken==0.8.0
+psutil==6.1.0
+
+# Testing (optional)
+requests==2.32.3
+sseclient-py==1.8.0
